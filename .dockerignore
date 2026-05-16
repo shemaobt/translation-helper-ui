@@ -1,12 +1,33 @@
 node_modules
 dist
+.vite
 .git
 .gitignore
-.DS_Store
-*.log
+
+# Environment and secrets
+.env
+.env.*
+
+# IDE
 .vscode
 .idea
-Dockerfile*
-docker-compose*.yml
+*.swp
+*.swo
+
+# Testing
+coverage
+
+# Build artifacts
+*.tsbuildinfo
+
+# CI metadata (not needed by the image)
+.github
+
+# Docker (keep nginx.conf and docker-entrypoint.sh — needed by Dockerfile)
+Dockerfile
+docker-compose.yml
 .dockerignore
-README.md
+
+# Documentation
+*.md
+LICENSE*

@@ -1,11 +1,12 @@
 import axios, { AxiosError, type AxiosInstance } from 'axios';
 
-const BASE_URL: string =
-  (import.meta.env?.VITE_API_BASE_URL as string | undefined)?.trim() ||
-  'http://localhost:8000';
+// All API calls go to relative `/api/*` URLs. In production they hit the
+// same origin (an nginx that reverse-proxies `/api` to the backend, see
+// nginx.conf + docker-entrypoint.sh + docker-compose.yml). For local
+// `npm run dev`, Vite's dev server proxies `/api` to http://localhost:8000
+// (see vite.config.ts). This keeps the bundle backend-URL-agnostic.
 
 export const api: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -39,6 +40,9 @@ api.interceptors.response.use(
   },
 );
 
+/** Returns the absolute origin for non-axios calls (e.g. SSE via fetch).
+ *  Empty string means "same origin as the page", which is what we want
+ *  both in dev (Vite proxy) and in prod (nginx reverse proxy). */
 export function apiBaseUrl(): string {
-  return BASE_URL;
+  return '';
 }
