@@ -256,11 +256,13 @@ function ProfileStep({
         placeholder="YWAM Brasil — Belo Horizonte"
         value={form.organization}
         onChange={(e) => patch('organization', e.currentTarget.value)}
+        disabled={submitting}
       />
       <Select
         label="Your role"
         value={form.role}
         onChange={(v) => patch('role', v)}
+        disabled={submitting}
         options={ROLE_OPTIONS.map((r) => ({ value: r, label: r }))}
       />
       <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
