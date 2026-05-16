@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon, type IconName } from '../Icon';
 
-export type ToastVariant = 'success' | 'error' | 'info';
+export type ToastVariant = 'success' | 'error' | 'info' | 'warning';
 
 interface ToastProps {
   variant?: ToastVariant;
@@ -14,12 +14,14 @@ const COLORS: Record<ToastVariant, string> = {
   success: 'var(--success)',
   error: 'var(--destructive)',
   info: 'var(--text-2)',
+  warning: 'var(--warning)',
 };
 
 const ICONS: Record<ToastVariant, IconName> = {
   success: 'check',
   error: 'x',
   info: 'info',
+  warning: 'alert-triangle',
 };
 
 export function Toast({ variant = 'success', title, body, style }: ToastProps) {
