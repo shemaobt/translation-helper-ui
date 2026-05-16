@@ -40,6 +40,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
   const [inputState, setInputState] = useState<InputState>('idle');
   const [chatTitle, setChatTitle] = useState<string>(fresh ? 'New thread' : 'Loading…');
   const [error, setError] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
   const loadedFor = useRef<string | null>(null);
   const streamAbortRef = useRef<AbortController | null>(null);
 
@@ -77,6 +78,8 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load chat');
+        setMessages([]);
+        setChatTitle('Could not load this chat');
       }
     })();
     return () => {
@@ -88,6 +91,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
     async (text: string) => {
       const body = text.trim();
       if (!body) return;
+      if (isStreaming) return;
       const token = useAuthStore.getState().tokens?.access;
       if (!token) {
         setError('Not authenticated');
@@ -120,6 +124,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       ]);
       setDraft('');
       setInputState('idle');
+      setIsStreaming(true);
 
       streamAbortRef.current?.abort();
       const controller = new AbortController();
@@ -179,9 +184,10 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         if (streamAbortRef.current === controller) {
           streamAbortRef.current = null;
         }
+        setIsStreaming(false);
       }
     },
-    [agentId, chatId, navigate],
+    [agentId, chatId, isStreaming, navigate],
   );
 
   const toggleMic = useCallback(() => {
@@ -208,5 +214,6 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
     setInputState,
     toggleMic,
     error,
+    isStreaming,
   };
 }
