@@ -51,16 +51,22 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
     }
     if (!chatId || loadedFor.current === chatId) return;
     loadedFor.current = chatId;
+    let cancelled = false;
     void (async () => {
       try {
         const detail = await chatsApi.getChat(chatId);
+        if (cancelled) return;
         setAgentId(detail.agent_id);
         setMessages(detail.messages.map(toSeed));
         setChatTitle(detail.title ?? 'Untitled thread');
       } catch (e) {
+        if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load chat');
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [chatId, fresh]);
 
   const send = useCallback(
@@ -78,6 +84,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       if (!targetChatId || isNewThread(targetChatId)) {
         const created = await chatsApi.createChat(agentId);
         targetChatId = created.id;
+        loadedFor.current = created.id;
         navigate(`/chat/${created.id}`, { replace: true });
       }
 
