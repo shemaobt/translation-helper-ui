@@ -3,6 +3,8 @@ import { Button } from '../primitives';
 
 interface VoiceTakeoverProps {
   elapsedMs?: number;
+  approachingLimit?: boolean;
+  maxDurationMs?: number;
   onCancel?: () => void;
   onSend?: () => void;
 }
@@ -14,7 +16,14 @@ function formatElapsed(ms: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-export function VoiceTakeover({ elapsedMs = 0, onCancel, onSend }: VoiceTakeoverProps) {
+export function VoiceTakeover({
+  elapsedMs = 0,
+  approachingLimit = false,
+  maxDurationMs,
+  onCancel,
+  onSend,
+}: VoiceTakeoverProps) {
+  const limitLabel = maxDurationMs ? formatElapsed(maxDurationMs) : null;
   return (
     <div
       style={{
@@ -70,17 +79,30 @@ export function VoiceTakeover({ elapsedMs = 0, onCancel, onSend }: VoiceTakeover
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          color: 'var(--destructive)',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 2,
+          color: approachingLimit ? 'var(--destructive)' : 'var(--text-2)',
           fontSize: 12,
           fontWeight: 500,
           fontVariantNumeric: 'tabular-nums',
           padding: '0 8px',
         }}
       >
-        <span style={{ width: 8, height: 8, borderRadius: 999, background: 'var(--destructive)' }} />
-        {formatElapsed(elapsedMs)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 999,
+              background: approachingLimit ? 'var(--destructive)' : 'var(--accent)',
+            }}
+          />
+          {formatElapsed(elapsedMs)}
+        </div>
+        {approachingLimit && limitLabel && (
+          <div style={{ fontSize: 10 }}>(stopping at {limitLabel})</div>
+        )}
       </div>
       <Button variant="ghost" leadingIcon="x" onClick={onCancel}>
         Cancel
