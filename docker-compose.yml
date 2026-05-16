@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: translation-helper-ui:latest
+    container_name: translation-helper-ui
+    ports:
+      - "${PORT:-8080}:80"
+    restart: unless-stopped
+
+  dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: translation-helper-ui:dev
+    container_name: translation-helper-ui-dev
+    ports:
+      - "${DEV_PORT:-5173}:5173"
+    volumes:
+      - ./src:/app/src
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.node.json:/app/tsconfig.node.json
+    environment:
+      - CHOKIDAR_USEPOLLING=1
