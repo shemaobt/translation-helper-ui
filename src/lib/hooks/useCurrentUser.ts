@@ -45,9 +45,13 @@ export function useCurrentUser() {
 
   const save = async (): Promise<void> => {
     if (!dirty) return;
+    const trimmed = draftDisplayName.trim();
+    if (!trimmed) {
+      throw new Error('Display name cannot be empty');
+    }
     setSaving(true);
     try {
-      await updateProfile({ display_name: draftDisplayName.trim() || undefined });
+      await updateProfile({ display_name: trimmed });
     } finally {
       setSaving(false);
     }
