@@ -1,18 +1,31 @@
 import { useLocation } from 'wouter';
 import { Icon } from '../components/Icon';
-import { Avatar, Button, Input, Select } from '../components/primitives';
+import { Avatar, Button, Input, Pill } from '../components/primitives';
 import { SettingsCard } from '../components/settings';
 import { AppShell, MobileHeader, TopBar } from '../components/shells';
-import { ROLE_OPTIONS } from '../lib/agents';
 import { useCurrentUser } from '../lib/hooks/useCurrentUser';
 import { useIsMobile } from '../lib/hooks/useIsMobile';
 import { useToast } from '../lib/hooks/useToast';
 
 export default function Profile() {
-  const { user, draftOrg, setDraftOrg, draftRole, setDraftRole, dirty, save } = useCurrentUser();
+  const { user, draftDisplayName, setDraftDisplayName, dirty, saving, save } =
+    useCurrentUser();
   const toast = useToast();
   const isMobile = useIsMobile();
   const [, navigate] = useLocation();
+
+  const onSaveDisplayName = async () => {
+    try {
+      await save();
+      toast.show({ variant: 'success', title: 'Display name updated' });
+    } catch (e) {
+      toast.show({
+        variant: 'error',
+        title: 'Could not update display name',
+        body: e instanceof Error ? e.message : undefined,
+      });
+    }
+  };
 
   return (
     <AppShell>
@@ -48,7 +61,7 @@ export default function Profile() {
                 gap: isMobile ? 16 : 24,
               }}
             >
-              <Avatar size={isMobile ? 64 : 88} name={`${user.firstName} ${user.lastName}`} />
+              <Avatar size={isMobile ? 64 : 88} name={user.displayName || user.email} />
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <Button
                   variant="secondary"
@@ -69,34 +82,48 @@ export default function Profile() {
 
           <SettingsCard title="Account information" subtitle="Synced from your account.">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <ReadOnlyRow label="First name" value={user.firstName} />
-              <ReadOnlyRow label="Last name" value={user.lastName} />
-              <ReadOnlyRow label="Email" value={user.email} />
+              <ReadOnlyRow label="Email" value={user.email} copyable />
             </div>
           </SettingsCard>
 
           <SettingsCard
-            title="Organization"
-            subtitle="How you describe your work."
-            actionLabel="Save changes"
-            actionDisabled={!dirty}
-            onAction={() => {
-              void save();
-              toast.show({ variant: 'success', title: 'Organization updated' });
-            }}
+            title="Display name"
+            subtitle="How you appear to others across Translation Helper."
+            actionLabel={saving ? 'Saving…' : 'Save changes'}
+            actionDisabled={!dirty || saving}
+            onAction={() => void onSaveDisplayName()}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <Input
-                label="Organization"
-                value={draftOrg}
-                onChange={(e) => setDraftOrg(e.target.value)}
-              />
-              <Select
-                label="Your role"
-                value={draftRole}
-                onChange={setDraftRole}
-                options={ROLE_OPTIONS.map((r) => ({ value: r, label: r }))}
-              />
+            <Input
+              label="Display name"
+              value={draftDisplayName}
+              onChange={(e) => setDraftDisplayName(e.target.value)}
+              placeholder="Ana Costa"
+              autoComplete="name"
+            />
+          </SettingsCard>
+
+          <SettingsCard
+            title="Your access"
+            subtitle="Roles are managed by your platform admin."
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {user.isPlatformAdmin && (
+                <Pill variant="accent" leadingIcon="sparkles">
+                  Platform admin
+                </Pill>
+              )}
+              {user.appRoles.length > 0 ? (
+                user.appRoles.map((role) => (
+                  <Pill key={role} variant="approved" dot>
+                    {role}
+                  </Pill>
+                ))
+              ) : !user.isPlatformAdmin ? (
+                <div className="tw-small" style={{ color: 'var(--text-2)' }}>
+                  No translation-helper roles yet. An admin needs to approve your access
+                  request.
+                </div>
+              ) : null}
             </div>
           </SettingsCard>
 
@@ -117,7 +144,13 @@ export default function Profile() {
   );
 }
 
-function ReadOnlyRow({ label, value }: { label: string; value: string }) {
+interface ReadOnlyRowProps {
+  label: string;
+  value: string;
+  copyable?: boolean;
+}
+
+function ReadOnlyRow({ label, value, copyable }: ReadOnlyRowProps) {
   return (
     <div
       style={{
@@ -132,22 +165,24 @@ function ReadOnlyRow({ label, value }: { label: string; value: string }) {
       <div className="tw-eyebrow" style={{ width: 110 }}>
         {label}
       </div>
-      <div style={{ flex: 1, fontSize: 14 }}>{value}</div>
-      <button
-        onClick={() => navigator.clipboard?.writeText(value)}
-        style={{
-          color: 'var(--text-3)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: 12,
-          cursor: 'pointer',
-          background: 'transparent',
-          border: 0,
-        }}
-      >
-        <Icon name="copy" size={13} /> Copy
-      </button>
+      <div style={{ flex: 1, fontSize: 14 }}>{value || '—'}</div>
+      {copyable && value && (
+        <button
+          onClick={() => navigator.clipboard?.writeText(value)}
+          style={{
+            color: 'var(--text-3)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            cursor: 'pointer',
+            background: 'transparent',
+            border: 0,
+          }}
+        >
+          <Icon name="copy" size={13} /> Copy
+        </button>
+      )}
     </div>
   );
 }
