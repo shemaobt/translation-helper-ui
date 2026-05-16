@@ -1,20 +1,40 @@
-FROM node:20-alpine AS build
+# Build stage
+FROM node:20-alpine AS builder
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json* ./
 RUN npm ci
 
-COPY tsconfig.json tsconfig.node.json vite.config.ts index.html ./
-COPY src ./src
+COPY . .
+
+ENV NODE_ENV=production
 
 RUN npm run build
 
-FROM nginx:1.27-alpine AS run
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+# Runtime stage
+FROM nginx:stable-alpine AS runtime
 
-EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1
+# Copy nginx configuration template (envsubst'd at container start)
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
-CMD ["nginx", "-g", "daemon off;"]
+# Copy built static assets from the Vite build
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Entrypoint substitutes $BACKEND_URL into the nginx template, then execs nginx
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Permissions required for the non-root `nginx` user
+RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx && \
+  chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html && \
+  chmod -R 755 /var/cache/nginx /var/run /var/log/nginx && \
+  touch /var/run/nginx.pid && \
+  chown nginx:nginx /var/run/nginx.pid
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+
+EXPOSE 8080
+
+CMD ["/docker-entrypoint.sh"]
