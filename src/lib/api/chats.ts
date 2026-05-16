@@ -58,6 +58,7 @@ export async function streamChatMessage(
   agentId: AgentId | undefined,
   token: string,
   onChunk: (text: string) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   const url = `${apiBaseUrl()}${BASE}/${chatId}/messages/stream`;
   const response = await fetch(url, {
@@ -68,6 +69,7 @@ export async function streamChatMessage(
       Accept: 'text/event-stream',
     },
     body: JSON.stringify({ content, agent_id: agentId }),
+    signal,
   });
   if (!response.ok || !response.body) {
     const text = await response.text();

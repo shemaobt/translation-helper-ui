@@ -41,6 +41,21 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
   const [chatTitle, setChatTitle] = useState<string>(fresh ? 'New thread' : 'Loading…');
   const [error, setError] = useState<string | null>(null);
   const loadedFor = useRef<string | null>(null);
+  const streamAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      streamAbortRef.current?.abort();
+      streamAbortRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      streamAbortRef.current?.abort();
+      streamAbortRef.current = null;
+    };
+  }, [chatId]);
 
   useEffect(() => {
     if (fresh) {
@@ -106,6 +121,10 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       setDraft('');
       setInputState('idle');
 
+      streamAbortRef.current?.abort();
+      const controller = new AbortController();
+      streamAbortRef.current = controller;
+
       let collected = '';
       try {
         await chatsApi.streamChatMessage(
@@ -123,6 +142,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
               ),
             );
           },
+          controller.signal,
         );
         setMessages((prev) =>
           prev.map((m) =>
@@ -132,19 +152,33 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
           ),
         );
       } catch (e) {
+        const aborted =
+          (e instanceof DOMException && e.name === 'AbortError') ||
+          (e instanceof Error && e.name === 'AbortError');
+        if (aborted) {
+          return;
+        }
+        const errorMarker = '\n\n⚠️ Stream interrupted.';
+        const finalContent = collected
+          ? `${collected}${errorMarker}`
+          : 'Sorry, there was an error.';
         setError(e instanceof Error ? e.message : 'Streaming failed');
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMsgId
               ? {
                   ...m,
-                  content: collected || 'Sorry, there was an error.',
-                  copyText: collected || 'Sorry, there was an error.',
+                  content: finalContent,
+                  copyText: finalContent,
                   streaming: false,
                 }
               : m,
           ),
         );
+      } finally {
+        if (streamAbortRef.current === controller) {
+          streamAbortRef.current = null;
+        }
       }
     },
     [agentId, chatId, navigate],
