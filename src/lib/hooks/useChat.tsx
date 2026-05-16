@@ -5,6 +5,7 @@ import { chatsApi } from '../api';
 import type { ChatMessageDto } from '../api/types';
 import type { ChatMessageSeed } from '../fixtures';
 import { useAuthStore } from '../stores/authStore';
+import { useChatHistoryStore } from '../stores/chatHistoryStore';
 
 export type InputState = 'idle' | 'typing' | 'listening' | 'error';
 
@@ -105,6 +106,8 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         targetChatId = created.id;
         loadedFor.current = created.id;
         navigate(`/chat/${created.id}`, { replace: true });
+        // Fire-and-forget: surface the new chat in Sidebar + /history immediately.
+        void useChatHistoryStore.getState().refresh();
       }
 
       const now = Date.now();
@@ -156,6 +159,8 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
               : m,
           ),
         );
+        // Refresh history so the sidebar reflects the new title + timestamp.
+        void useChatHistoryStore.getState().refresh();
       } catch (e) {
         const aborted =
           (e instanceof DOMException && e.name === 'AbortError') ||

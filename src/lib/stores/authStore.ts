@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi, configureApiAuth, type CurrentUser } from '../api';
+import { useChatHistoryStore } from './chatHistoryStore';
 
 interface Tokens {
   access: string;
@@ -90,6 +91,7 @@ export const useAuthStore = create<AuthState>()(
           // ignore network errors on logout
         }
         set({ user: null, tokens: null, appRoles: [], loaded: true, error: null });
+        useChatHistoryStore.getState().clear();
       },
 
       refreshMe: async () => {
