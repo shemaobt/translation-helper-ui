@@ -1,35 +1,18 @@
-import { useEffect, useState } from 'react';
-import { chatsApi } from '../api';
-import type { ChatSummary } from '../api/types';
+import { useEffect } from 'react';
+import { useChatHistoryStore } from '../stores/chatHistoryStore';
 
-interface State {
-  chats: ChatSummary[];
-  loading: boolean;
-  error: string | null;
-  refresh: () => Promise<void>;
-}
-
-export function useChatHistory(): State {
-  const [chats, setChats] = useState<ChatSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const rows = await chatsApi.listChats();
-      setChats(rows);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load history');
-    } finally {
-      setLoading(false);
-    }
-  };
+/** Thin wrapper around chatHistoryStore that lazy-loads on first mount.
+ *  Multiple consumers share one cached fetch via the store. */
+export function useChatHistory() {
+  const chats = useChatHistoryStore((s) => s.chats);
+  const loading = useChatHistoryStore((s) => s.loading);
+  const error = useChatHistoryStore((s) => s.error);
+  const lastFetchedAt = useChatHistoryStore((s) => s.lastFetchedAt);
+  const refresh = useChatHistoryStore((s) => s.refresh);
 
   useEffect(() => {
-    void load();
-  }, []);
+    if (lastFetchedAt === null) void refresh();
+  }, [lastFetchedAt, refresh]);
 
-  return { chats, loading, error, refresh: load };
+  return { chats, loading, error, refresh };
 }

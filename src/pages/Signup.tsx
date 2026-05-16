@@ -48,17 +48,26 @@ export default function Signup() {
     }
     setSubmitting(true);
     try {
-      await signup({
+      const { accessRequested } = await signup({
         email: form.email,
         password: form.password,
         display_name: `${form.firstName} ${form.lastName}`.trim() || undefined,
       });
-      toast.show({
-        variant: 'success',
-        title: 'Account created',
-        body: 'An admin will review your access shortly.',
-      });
-      navigate('/login?status=pending');
+      if (accessRequested) {
+        toast.show({
+          variant: 'success',
+          title: 'Account created',
+          body: 'An admin will review your access shortly.',
+        });
+        navigate('/login?status=pending');
+      } else {
+        toast.show({
+          variant: 'warning',
+          title: 'Account created',
+          body: "We couldn't queue your access request. Sign in and try again from Settings.",
+        });
+        navigate('/login');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create account');
     } finally {
@@ -247,11 +256,13 @@ function ProfileStep({
         placeholder="YWAM Brasil — Belo Horizonte"
         value={form.organization}
         onChange={(e) => patch('organization', e.currentTarget.value)}
+        disabled={submitting}
       />
       <Select
         label="Your role"
         value={form.role}
         onChange={(v) => patch('role', v)}
+        disabled={submitting}
         options={ROLE_OPTIONS.map((r) => ({ value: r, label: r }))}
       />
       <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>

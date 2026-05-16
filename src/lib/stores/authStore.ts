@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi, configureApiAuth, type CurrentUser } from '../api';
+import { useChatHistoryStore } from './chatHistoryStore';
 
 interface Tokens {
   access: string;
@@ -19,7 +20,7 @@ interface AuthState {
     email: string;
     password: string;
     display_name?: string;
-  }) => Promise<void>;
+  }) => Promise<{ accessRequested: boolean }>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
   refreshMyRoles: () => Promise<void>;
@@ -68,11 +69,14 @@ export const useAuthStore = create<AuthState>()(
             loaded: true,
             loading: false,
           });
+          let accessRequested = true;
           try {
             await authApi.requestAccess('translation-helper');
-          } catch {
-            // ignore: user can request later via tripod-console
+          } catch (err) {
+            accessRequested = false;
+            console.warn('translation-helper access request failed:', err);
           }
+          return { accessRequested };
         } catch (e) {
           set({ loading: false, error: e instanceof Error ? e.message : 'Signup failed' });
           throw e;
@@ -87,6 +91,7 @@ export const useAuthStore = create<AuthState>()(
           // ignore network errors on logout
         }
         set({ user: null, tokens: null, appRoles: [], loaded: true, error: null });
+        useChatHistoryStore.getState().clear();
       },
 
       refreshMe: async () => {

@@ -95,6 +95,7 @@ export default function Login() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.currentTarget.value)}
+          disabled={submitting}
           required
         />
         <div>
@@ -123,6 +124,7 @@ export default function Login() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.currentTarget.value)}
+            disabled={submitting}
             required
           />
         </div>

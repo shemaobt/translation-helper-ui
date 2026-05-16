@@ -6,6 +6,7 @@ import {
   MainInput,
   UserMessage,
 } from '../components/chat';
+import { Alert } from '../components/primitives';
 import { AppShell } from '../components/shells';
 import { useChat } from '../lib/hooks/useChat';
 import { useIsMobile } from '../lib/hooks/useIsMobile';
@@ -24,6 +25,8 @@ export default function Chat() {
     send,
     inputState,
     toggleMic,
+    error,
+    isStreaming,
   } = useChat(params?.chatId);
 
   return (
@@ -39,6 +42,13 @@ export default function Chat() {
             padding: isMobile ? '16px 16px 8px' : '24px 32px 8px',
           }}
         >
+          {error && !isStreaming && (
+            <div style={{ marginBottom: 16 }}>
+              <Alert variant="destructive" title="Couldn't load this chat">
+                {error}
+              </Alert>
+            </div>
+          )}
           {isNew && messages.length === 0 ? (
             <ChatEmptyState agent={agent} onPickStarter={send} />
           ) : (
@@ -72,6 +82,7 @@ export default function Chat() {
               agent={agent}
               onAgentClick={rotateAgent}
               showHint={!isMobile}
+              disabled={isStreaming}
             />
           </div>
         </div>

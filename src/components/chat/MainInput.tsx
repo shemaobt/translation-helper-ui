@@ -9,6 +9,17 @@ import { Icon } from '../Icon';
 import { Alert, IconButton } from '../primitives';
 import { VoiceTakeover } from './VoiceTakeover';
 
+function isPermissionDenied(message: string | null): boolean {
+  if (!message) return false;
+  const m = message.toLowerCase();
+  return (
+    m.includes('denied') ||
+    m.includes('permission') ||
+    m.includes('notallowed') ||
+    m.includes('not allowed')
+  );
+}
+
 interface MainInputProps {
   value: string;
   onChange: (v: string) => void;
@@ -19,6 +30,8 @@ interface MainInputProps {
   agent?: Agent;
   onAgentClick?: () => void;
   showHint?: boolean;
+  /** True while the previous assistant turn is still streaming. Locks the whole input. */
+  disabled?: boolean;
 }
 
 export function MainInput({
@@ -31,6 +44,7 @@ export function MainInput({
   agent,
   onAgentClick,
   showHint,
+  disabled = false,
 }: MainInputProps) {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
@@ -38,27 +52,8 @@ export function MainInput({
   const [localError, setLocalError] = useState<string | null>(null);
   const toast = useToast();
   const isMobile = useIsMobile();
-  const recorder = useVoiceRecorder();
-  const onAttach = () => toast.show({ title: 'Attachments — coming soon' });
 
-  useEffect(() => {
-    if (recorder.error) {
-      setLocalError(recorder.error);
-      onMicStateChange?.('error');
-    }
-  }, [recorder.error, onMicStateChange]);
-
-  const startListening = async () => {
-    setLocalError(null);
-    await recorder.start();
-    if (!recorder.error) {
-      onMicStateChange?.('listening');
-      onMicClick?.();
-    }
-  };
-
-  const finishAndTranscribe = async () => {
-    const blob = await recorder.stop();
+  const transcribeBlob = async (blob: Blob | null) => {
     onMicStateChange?.('idle');
     onMicClick?.();
     if (!blob) {
@@ -81,6 +76,35 @@ export function MainInput({
     }
   };
 
+  const recorder = useVoiceRecorder({
+    onAutoStop: (blob) => {
+      toast.show({ title: 'Recording limit reached', body: 'Auto-stopped at 5 minutes.' });
+      void transcribeBlob(blob);
+    },
+  });
+  const onAttach = () => toast.show({ title: 'Attachments — coming soon' });
+
+  useEffect(() => {
+    if (recorder.error) {
+      setLocalError(recorder.error);
+      onMicStateChange?.('error');
+    }
+  }, [recorder.error, onMicStateChange]);
+
+  const startListening = async () => {
+    setLocalError(null);
+    await recorder.start();
+    if (!recorder.error) {
+      onMicStateChange?.('listening');
+      onMicClick?.();
+    }
+  };
+
+  const finishAndTranscribe = async () => {
+    const blob = await recorder.stop();
+    await transcribeBlob(blob);
+  };
+
   const cancelListening = () => {
     recorder.cancel();
     onMicStateChange?.('idle');
@@ -91,6 +115,8 @@ export function MainInput({
     return (
       <VoiceTakeover
         elapsedMs={recorder.elapsedMs}
+        approachingLimit={recorder.approachingLimit}
+        maxDurationMs={recorder.maxDurationMs}
         onCancel={cancelListening}
         onSend={() => void finishAndTranscribe()}
       />
@@ -104,7 +130,7 @@ export function MainInput({
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (hasContent) onSend?.(value);
+      if (hasContent && !disabled) onSend?.(value);
     }
   };
 
@@ -126,6 +152,11 @@ export function MainInput({
           <div style={{ margin: 10 }}>
             <Alert variant="destructive" title="Voice input error">
               {localError ?? 'Enable mic permissions in your browser settings.'}
+              {isPermissionDenied(localError) && (
+                <div style={{ marginTop: 6, color: 'var(--text-2)' }}>
+                  Tip: enable microphone access in your browser's site settings, then click the mic again.
+                </div>
+              )}
             </Alert>
           </div>
         )}
@@ -161,9 +192,15 @@ export function MainInput({
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onKeyDown={handleKey}
-            placeholder={transcribing ? 'Transcribing your voice…' : 'What can I do for you today?'}
+            placeholder={
+              disabled
+                ? 'Generating response…'
+                : transcribing
+                  ? 'Transcribing your voice…'
+                  : 'What can I do for you today?'
+            }
             rows={1}
-            disabled={transcribing}
+            disabled={transcribing || disabled}
             style={{
               flex: 1,
               alignSelf: 'center',
@@ -193,12 +230,14 @@ export function MainInput({
             hoverFill={false}
             aria-label="Add attachment"
             onClick={onAttach}
+            disabled={disabled}
           />
           <IconButton
             icon={isError ? 'mic-off' : 'mic'}
             onClick={() => void startListening()}
             destructive={isError}
             aria-label="Voice input"
+            disabled={disabled}
           />
           <div style={{ flex: 1 }} />
           {agent && (
@@ -235,12 +274,13 @@ export function MainInput({
               aria-label="Attach file"
               iconSize={15}
               onClick={onAttach}
+              disabled={disabled}
             />
           )}
           <button
             aria-label="Send"
-            disabled={!hasContent || transcribing}
-            onClick={() => hasContent && onSend?.(value)}
+            disabled={!hasContent || transcribing || disabled}
+            onClick={() => hasContent && !disabled && onSend?.(value)}
             className="tw-focusable"
             style={{
               width: 40,

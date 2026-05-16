@@ -1,56 +1,68 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { CurrentUserProfile } from '../fixtures';
 import { useAuthStore } from '../stores/authStore';
 
-function splitDisplayName(displayName: string | null): { firstName: string; lastName: string } {
-  if (!displayName) return { firstName: '', lastName: '' };
-  const parts = displayName.trim().split(/\s+/);
-  const [first, ...rest] = parts;
-  return { firstName: first ?? '', lastName: rest.join(' ') };
+export interface UserSummary {
+  displayName: string;
+  email: string;
+  isPlatformAdmin: boolean;
+  appRoles: string[];
 }
 
-function toProfile(user: ReturnType<typeof useAuthStore.getState>['user']): CurrentUserProfile {
-  if (!user) {
-    return { firstName: '', lastName: '', email: '', organization: '', role: '' };
+function toSummary(
+  authUser: ReturnType<typeof useAuthStore.getState>['user'],
+  appRoles: string[],
+): UserSummary {
+  if (!authUser) {
+    return { displayName: '', email: '', isPlatformAdmin: false, appRoles: [] };
   }
-  const { firstName, lastName } = splitDisplayName(user.display_name);
   return {
-    firstName,
-    lastName,
-    email: user.email,
-    organization: '',
-    role: '',
+    displayName: authUser.display_name ?? '',
+    email: authUser.email,
+    isPlatformAdmin: authUser.is_platform_admin,
+    appRoles,
   };
 }
 
 export function useCurrentUser() {
   const authUser = useAuthStore((s) => s.user);
+  const appRoles = useAuthStore((s) => s.appRoles);
   const updateProfile = useAuthStore((s) => s.updateProfile);
   const refreshMe = useAuthStore((s) => s.refreshMe);
 
-  const user = useMemo(() => toProfile(authUser), [authUser]);
-  const [draftOrg, setDraftOrg] = useState(user.organization);
-  const [draftRole, setDraftRole] = useState(user.role);
+  const user = useMemo(() => toSummary(authUser, appRoles), [authUser, appRoles]);
+  const [draftDisplayName, setDraftDisplayName] = useState(user.displayName);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setDraftOrg(user.organization);
-    setDraftRole(user.role);
-  }, [user.organization, user.role]);
+    setDraftDisplayName(user.displayName);
+  }, [user.displayName]);
 
   useEffect(() => {
     if (!authUser) void refreshMe();
   }, [authUser, refreshMe]);
 
-  const dirty = useMemo(
-    () => draftOrg !== user.organization || draftRole !== user.role,
-    [draftOrg, draftRole, user.organization, user.role],
-  );
+  const dirty = draftDisplayName.trim() !== user.displayName.trim();
 
-  const save = async () => {
+  const save = async (): Promise<void> => {
     if (!dirty) return;
-    const display = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-    await updateProfile({ display_name: display || undefined });
+    const trimmed = draftDisplayName.trim();
+    if (!trimmed) {
+      throw new Error('Display name cannot be empty');
+    }
+    setSaving(true);
+    try {
+      await updateProfile({ display_name: trimmed });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  return { user, draftOrg, setDraftOrg, draftRole, setDraftRole, dirty, save };
+  return {
+    user,
+    draftDisplayName,
+    setDraftDisplayName,
+    dirty,
+    saving,
+    save,
+  };
 }

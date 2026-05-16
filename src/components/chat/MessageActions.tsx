@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { audioApi } from '../../lib/api';
 import { useToast } from '../../lib/hooks/useToast';
 import { IconButton } from '../primitives';
@@ -12,6 +12,18 @@ export function MessageActions({ copyText }: MessageActionsProps) {
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    },
+    [],
+  );
 
   const onCopy = async () => {
     if (!copyText) {

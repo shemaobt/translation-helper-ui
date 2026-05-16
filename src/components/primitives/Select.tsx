@@ -8,9 +8,18 @@ interface SelectProps {
   options: { value: string; label: string }[];
   placeholder?: string;
   containerStyle?: CSSProperties;
+  disabled?: boolean;
 }
 
-export function Select({ label, value, onChange, options, placeholder, containerStyle }: SelectProps) {
+export function Select({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  containerStyle,
+  disabled = false,
+}: SelectProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, ...containerStyle }}>
       {label && <label style={{ fontSize: 13, fontWeight: 500 }}>{label}</label>}
@@ -28,6 +37,7 @@ export function Select({ label, value, onChange, options, placeholder, container
           color: value ? 'var(--text)' : 'var(--text-3)',
           boxShadow: 'var(--shadow-xs)',
           position: 'relative',
+          opacity: disabled ? 0.6 : 1,
         }}
       >
         <span style={{ flex: 1 }}>{value || placeholder || ''}</span>
@@ -35,11 +45,12 @@ export function Select({ label, value, onChange, options, placeholder, container
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
           style={{
             position: 'absolute',
             inset: 0,
             opacity: 0,
-            cursor: 'pointer',
+            cursor: disabled ? 'not-allowed' : 'pointer',
             width: '100%',
             height: '100%',
           }}
