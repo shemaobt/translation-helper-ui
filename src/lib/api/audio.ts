@@ -16,14 +16,9 @@ export async function transcribeAudio(
   return data;
 }
 
-export async function speak(
-  text: string,
-  languageCode = 'en-US',
-  voiceName?: string,
-): Promise<SpeakResponse> {
+export async function speak(text: string, voiceName?: string): Promise<SpeakResponse> {
   const { data } = await api.post<SpeakResponse>('/api/translation-helper/audio/speak', {
     text,
-    language_code: languageCode,
     voice_name: voiceName,
   });
   return data;
