@@ -1,14 +1,16 @@
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { Button } from '../components/primitives';
 import { AppShell, MobileHeader, ShemaWaveDecor, TopBar } from '../components/shells';
 import { useIsMobile } from '../lib/hooks/useIsMobile';
 
 export default function NotFound() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const isMobile = useIsMobile();
   return (
     <AppShell>
-      {isMobile ? <MobileHeader title="Not found" /> : <TopBar />}
+      {isMobile ? <MobileHeader title={t('notFound.title')} /> : <TopBar />}
       <div
         style={{
           flex: 1,
@@ -40,13 +42,7 @@ export default function NotFound() {
             404
           </div>
           <div className="tw-h1" style={{ marginTop: 18, fontSize: isMobile ? 24 : 36 }}>
-            We couldn't find that page.
-          </div>
-          <div
-            className="tw-body"
-            style={{ color: 'var(--text-2)', marginTop: 10, fontSize: isMobile ? 14 : 16 }}
-          >
-            The link may be broken or the page may have moved.
+            {t('notFound.subtitle')}
           </div>
           <div
             style={{
@@ -58,10 +54,10 @@ export default function NotFound() {
             }}
           >
             <Button variant="ghost" leadingIcon="chevron-left" onClick={() => history.back()}>
-              Go back
+              {t('common.back')}
             </Button>
             <Button variant="primary" leadingIcon="home" onClick={() => navigate('/')}>
-              Go to home
+              {t('notFound.goHome')}
             </Button>
           </div>
         </div>
