@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
 import { AuthLanguageSwitcher } from '../AuthLanguageSwitcher';
-import { Wordmark } from '../primitives';
+import { IconButton, Wordmark } from '../primitives';
+import { useTheme } from '../Theme';
 import { ShemaWaveDecor } from './ShemaWaveDecor';
 
 interface AuthShellProps {
@@ -12,22 +13,35 @@ interface AuthShellProps {
 
 export function AuthShell({ alert, children }: AuthShellProps) {
   const { t } = useTranslation();
+  const { mode, toggle } = useTheme();
   const isMobile = useIsMobile();
   const isDesktop = !isMobile;
+  const isDark = mode === 'dark';
 
   return (
     <div
-      className="tw-root tw-dark"
+      className={`tw-root tw-${mode}`}
       style={{
         minHeight: '100vh',
-        background:
-          'linear-gradient(135deg, var(--bg) 0%, var(--surface) 55%, color-mix(in oklab, var(--accent) 12%, var(--bg)) 100%)',
+        background: isDark
+          ? 'linear-gradient(135deg, var(--bg) 0%, var(--surface) 55%, color-mix(in oklab, var(--accent) 12%, var(--bg)) 100%)'
+          : 'linear-gradient(135deg, var(--surface) 0%, var(--bg) 55%, color-mix(in oklab, var(--accent) 7%, var(--surface)) 100%)',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <ShemaWaveDecor corner="bottom-left" size={520} offset={140} opacity={0.07} />
-      <ShemaWaveDecor corner="top-right" size={360} offset={80} opacity={0.05} />
+      <ShemaWaveDecor
+        corner="bottom-left"
+        size={520}
+        offset={140}
+        opacity={isDark ? 0.07 : 0.09}
+      />
+      <ShemaWaveDecor
+        corner="top-right"
+        size={360}
+        offset={80}
+        opacity={isDark ? 0.05 : 0.07}
+      />
 
       <div
         style={{
@@ -48,7 +62,18 @@ export function AuthShell({ alert, children }: AuthShellProps) {
           }}
         >
           <Wordmark size={isMobile ? 20 : 22} />
-          <AuthLanguageSwitcher />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <IconButton
+              icon="sparkles"
+              variant="ghost"
+              hoverFill={false}
+              size={32}
+              iconSize={14}
+              aria-label={isDark ? t('common.switchToLight') : t('common.switchToDark')}
+              onClick={toggle}
+            />
+            <AuthLanguageSwitcher />
+          </div>
         </header>
 
         <main
@@ -193,14 +218,17 @@ export function AuthShell({ alert, children }: AuthShellProps) {
 
             <div
               style={{
-                background: 'color-mix(in oklab, var(--paper) 88%, transparent)',
+                background: isDark
+                  ? 'color-mix(in oklab, var(--paper) 88%, transparent)'
+                  : 'color-mix(in oklab, var(--paper) 96%, transparent)',
                 backdropFilter: 'blur(14px)',
                 WebkitBackdropFilter: 'blur(14px)',
-                border: '1px solid color-mix(in oklab, var(--accent) 14%, transparent)',
+                border: `1px solid color-mix(in oklab, var(--accent) ${isDark ? 14 : 18}%, transparent)`,
                 borderRadius: 24,
                 padding: isMobile ? 24 : 32,
-                boxShadow:
-                  '0 30px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+                boxShadow: isDark
+                  ? '0 30px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)'
+                  : 'var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.6)',
               }}
             >
               {children}
