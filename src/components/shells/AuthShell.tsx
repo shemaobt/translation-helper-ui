@@ -1,9 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
-import { LanguagePickerDialog } from '../LanguagePickerDialog';
-import { IconButton, Wordmark } from '../primitives';
-import { ThemeRoot } from '../Theme';
+import { AuthLanguageSwitcher } from '../AuthLanguageSwitcher';
+import { Wordmark } from '../primitives';
 import { ShemaWaveDecor } from './ShemaWaveDecor';
 
 interface AuthShellProps {
@@ -14,95 +13,215 @@ interface AuthShellProps {
 export function AuthShell({ alert, children }: AuthShellProps) {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const [languageOpen, setLanguageOpen] = useState(false);
+  const isDesktop = !isMobile;
+
   return (
-    <ThemeRoot style={{ minHeight: '100vh' }}>
+    <div
+      className="tw-root tw-dark"
+      style={{
+        minHeight: '100vh',
+        background:
+          'linear-gradient(135deg, var(--bg) 0%, var(--surface) 55%, color-mix(in oklab, var(--accent) 12%, var(--bg)) 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <ShemaWaveDecor corner="bottom-left" size={520} offset={140} opacity={0.07} />
+      <ShemaWaveDecor corner="top-right" size={360} offset={80} opacity={0.05} />
+
       <div
         style={{
+          position: 'relative',
+          zIndex: 1,
           minHeight: '100vh',
-          width: '100%',
-          background: 'var(--bg)',
           display: 'flex',
+          flexDirection: 'column',
+          padding: isMobile ? '20px 16px 24px' : '28px 40px 32px',
         }}
       >
-        <div
-          className="tw-app-frame"
+        <header
           style={{
-            flex: 1,
-            minHeight: '100vh',
-            background: 'var(--surface)',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            padding: isMobile ? '40px 16px 24px' : '64px 24px 32px',
-            gap: isMobile ? 20 : 26,
-            position: 'relative',
-            overflow: 'auto',
+            justifyContent: 'space-between',
+            marginBottom: isMobile ? 24 : 0,
           }}
         >
-          <ShemaWaveDecor corner="bottom-right" size={isMobile ? 320 : 480} offset={isMobile ? 80 : 120} />
+          <Wordmark size={isMobile ? 20 : 22} />
+          <AuthLanguageSwitcher />
+        </header>
 
-          <div
-            style={{
-              position: 'absolute',
-              top: isMobile ? 12 : 20,
-              right: isMobile ? 12 : 20,
-              zIndex: 2,
-            }}
-          >
-            <IconButton
-              icon="languages"
-              variant="paper"
-              hoverFill={false}
-              aria-label={t('common.language')}
-              onClick={() => setLanguageOpen(true)}
-            />
-          </div>
-
-          <div
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, zIndex: 1 }}
-          >
-            <Wordmark size={isMobile ? 24 : 30} />
-            <div
-              className="tw-small"
-              style={{ color: 'var(--text-3)', textAlign: 'center', maxWidth: 320 }}
+        <main
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isDesktop ? 80 : 0,
+            padding: isDesktop ? '40px 32px' : '0',
+            maxWidth: 1240,
+            margin: '0 auto',
+            width: '100%',
+          }}
+        >
+          {isDesktop && (
+            <section
+              style={{
+                flex: '1 1 0',
+                maxWidth: 520,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 22,
+              }}
             >
-              AI tools for Bible translation teams.
-            </div>
-          </div>
+              <h1
+                style={{
+                  fontFamily: 'Fraunces, serif',
+                  fontSize: 'clamp(56px, 6vw, 84px)',
+                  lineHeight: 1.02,
+                  fontWeight: 400,
+                  letterSpacing: '-0.025em',
+                  margin: 0,
+                  color: 'var(--text)',
+                  fontVariationSettings: '"opsz" 144, "SOFT" 50',
+                }}
+              >
+                <span style={{ display: 'block' }}>{t('authHero.line1')}</span>
+                <span
+                  style={{
+                    display: 'block',
+                    background:
+                      'linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 55%, #89AAA3) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {t('authHero.line2')}
+                </span>
+                <span style={{ display: 'block', color: 'var(--text-2)' }}>{t('authHero.line3')}</span>
+              </h1>
+              <p
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.55,
+                  color: 'var(--text-2)',
+                  maxWidth: 400,
+                  margin: 0,
+                }}
+              >
+                {t('authHero.subtitle')}
+              </p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+                {(
+                  [
+                    'pillStoryteller',
+                    'pillConversation',
+                    'pillOral',
+                    'pillHealth',
+                  ] as const
+                ).map((key, i) => (
+                  <span
+                    key={key}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      padding: '6px 12px',
+                      borderRadius: 999,
+                      background:
+                        i === 0
+                          ? 'color-mix(in oklab, var(--accent) 14%, transparent)'
+                          : 'color-mix(in oklab, var(--text) 6%, transparent)',
+                      color: i === 0 ? 'var(--accent)' : 'var(--text-2)',
+                      border:
+                        i === 0
+                          ? '1px solid color-mix(in oklab, var(--accent) 28%, transparent)'
+                          : '1px solid color-mix(in oklab, var(--text) 10%, transparent)',
+                    }}
+                  >
+                    {t(`authHero.${key}`)}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
-          {alert && <div style={{ width: '100%', maxWidth: 440, zIndex: 1 }}>{alert}</div>}
-
-          <div
+          <section
             style={{
+              flex: isDesktop ? '0 0 440px' : '1 1 100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              maxWidth: isDesktop ? 440 : 480,
+              margin: isDesktop ? '0' : '0 auto',
               width: '100%',
-              maxWidth: 440,
-              background: 'var(--paper)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 22,
-              padding: isMobile ? 24 : 36,
-              boxShadow: 'var(--shadow-sm)',
-              zIndex: 1,
             }}
           >
-            {children}
-          </div>
+            {isMobile && (
+              <div style={{ textAlign: 'center', marginBottom: 8 }}>
+                <h1
+                  style={{
+                    fontFamily: 'Fraunces, serif',
+                    fontSize: 'clamp(32px, 9vw, 44px)',
+                    lineHeight: 1.05,
+                    fontWeight: 400,
+                    letterSpacing: '-0.02em',
+                    margin: 0,
+                    color: 'var(--text)',
+                  }}
+                >
+                  {t('authHero.line1')}{' '}
+                  <span
+                    style={{
+                      background:
+                        'linear-gradient(135deg, var(--accent) 0%, color-mix(in oklab, var(--accent) 55%, #89AAA3) 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {t('authHero.line2')}
+                  </span>{' '}
+                  <span style={{ color: 'var(--text-2)' }}>{t('authHero.line3')}</span>
+                </h1>
+              </div>
+            )}
 
-          <div
-            className="tw-micro"
-            style={{
-              color: 'var(--text-3)',
-              textAlign: 'center',
-              zIndex: 1,
-              fontStyle: 'italic',
-              fontFamily: 'Fraunces, serif',
-            }}
-          >
-            by Shemá · YWAM Brasil
-          </div>
-        </div>
+            {alert && <div style={{ width: '100%' }}>{alert}</div>}
+
+            <div
+              style={{
+                background: 'color-mix(in oklab, var(--paper) 88%, transparent)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                border: '1px solid color-mix(in oklab, var(--accent) 14%, transparent)',
+                borderRadius: 24,
+                padding: isMobile ? 24 : 32,
+                boxShadow:
+                  '0 30px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+              }}
+            >
+              {children}
+            </div>
+          </section>
+        </main>
+
+        <footer
+          style={{
+            marginTop: 24,
+            display: 'flex',
+            justifyContent: 'center',
+            color: 'var(--text-4)',
+            fontSize: 12,
+            fontStyle: 'italic',
+            fontFamily: 'Fraunces, serif',
+          }}
+        >
+          {t('authHero.byline')}
+        </footer>
       </div>
-      <LanguagePickerDialog open={languageOpen} onClose={() => setLanguageOpen(false)} />
-    </ThemeRoot>
+    </div>
   );
 }
