@@ -113,6 +113,17 @@
     "viewAll": "View all",
     "discoverComingSoon": "Discover — coming soon"
   },
+  "authHero": {
+    "line1": "Discover.",
+    "line2": "Translate.",
+    "line3": "Speak.",
+    "subtitle": "AI tools for translators working in oral languages.",
+    "pillStoryteller": "Storyteller",
+    "pillConversation": "Conversation",
+    "pillOral": "Oral",
+    "pillHealth": "Health",
+    "byline": "by Shemá · YWAM Brasil"
+  },
   "chat": {
     "newThread": "New thread",
     "untitledThread": "Untitled thread",
