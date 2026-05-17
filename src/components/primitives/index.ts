@@ -12,4 +12,5 @@ export { Spinner } from './Spinner';
 export { Streaming } from './Streaming';
 export { Textarea } from './Textarea';
 export { Toast, type ToastVariant } from './Toast';
+export { Tooltip } from './Tooltip';
 export { Wordmark } from './Wordmark';

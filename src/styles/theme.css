@@ -250,6 +250,18 @@
 }
 .tw-spin { animation: tw-spin 900ms linear infinite; transform-origin: 50% 50%; }
 
+.tw-tooltip-wrap:hover > .tw-tooltip,
+.tw-tooltip-wrap:focus-within > .tw-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+@keyframes tw-listen-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 30%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--accent) 0%, transparent); }
+}
+.tw-listen-pulse { animation: tw-listen-pulse 1600ms ease-in-out infinite; }
+
 @media (max-width: 767px) {
   body { overscroll-behavior-y: contain; }
 }
