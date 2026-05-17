@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Agent } from '../../lib/agents';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
 import type { PromptDraft } from '../../lib/hooks/useAgentPrompts';
@@ -24,6 +25,7 @@ export function AgentPromptRow({
   onCancel,
   onSave,
 }: AgentPromptRowProps) {
+  const { t } = useTranslation();
   const { expanded, unsaved } = draft;
   const isMobile = useIsMobile();
   return (
@@ -74,7 +76,7 @@ export function AgentPromptRow({
               whiteSpace: 'nowrap',
             }}
           >
-            {agent.description}
+            {t(`agents.${agent.id}.description`)}
           </div>
         </div>
         <Icon
@@ -100,15 +102,19 @@ export function AgentPromptRow({
               gap: 12,
             }}
           >
-            <Input label="Name" value={draft.name} onChange={(e) => onChange({ name: e.target.value })} />
             <Input
-              label="Short description"
+              label={t('adminPrompts.name')}
+              value={draft.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+            />
+            <Input
+              label={t('adminPrompts.shortDescription')}
               value={draft.short}
               onChange={(e) => onChange({ short: e.target.value })}
             />
           </div>
           <Textarea
-            label="System prompt"
+            label={t('adminPrompts.systemPrompt')}
             value={draft.prompt}
             onChange={(e) => onChange({ prompt: e.target.value })}
             monospace
@@ -123,14 +129,14 @@ export function AgentPromptRow({
             }}
           >
             <Button variant="ghost" leadingIcon="refresh" onClick={onReset}>
-              Reset to default
+              {t('adminPrompts.resetToDefault')}
             </Button>
             <div style={{ flex: 1, minWidth: isMobile ? 0 : 'auto' }} />
             <Button variant="secondary" onClick={onCancel}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" leadingIcon="check" onClick={onSave}>
-              Save changes
+              {t('adminPrompts.saveChanges')}
             </Button>
           </div>
         </div>
@@ -140,6 +146,7 @@ export function AgentPromptRow({
 }
 
 function UnsavedBadge() {
+  const { t } = useTranslation();
   return (
     <span
       style={{
@@ -155,7 +162,7 @@ function UnsavedBadge() {
       }}
     >
       <span style={{ width: 5, height: 5, borderRadius: 999, background: 'var(--warning)' }} />
-      Unsaved changes
+      {t('adminPrompts.unsavedChanges')}
     </span>
   );
 }

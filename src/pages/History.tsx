@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { AgentIconBadge } from '../components/chat';
 import { Alert, Input } from '../components/primitives';
@@ -10,10 +11,10 @@ import { useChatHistory } from '../lib/hooks/useChatHistory';
 import { useIsMobile } from '../lib/hooks/useIsMobile';
 import { formatRelative, groupByBucket } from '../lib/time';
 
-function toHistoryItem(c: ChatSummary): ChatHistoryItem {
+function toHistoryItem(c: ChatSummary, untitled: string): ChatHistoryItem {
   return {
     id: c.id,
-    title: c.title || 'Untitled chat',
+    title: c.title || untitled,
     agentId: c.agent_id,
     preview: c.last_message_preview || '',
     lastMessageAt: new Date(c.last_message_at || c.updated_at || c.created_at),
@@ -21,28 +22,33 @@ function toHistoryItem(c: ChatSummary): ChatHistoryItem {
 }
 
 export default function History() {
+  const { t, i18n } = useTranslation();
   const [, navigate] = useLocation();
   const [query, setQuery] = useState('');
   const isMobile = useIsMobile();
   const { chats, loading, error } = useChatHistory();
+  const untitled = t('history.untitledChat');
 
-  const items = useMemo(() => chats.map(toHistoryItem), [chats]);
+  const items = useMemo(
+    () => chats.map((c) => toHistoryItem(c, untitled)),
+    [chats, untitled],
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
     return items.filter((c) =>
-      [c.title, c.preview, AGENT_BY_ID[c.agentId].name].some((s) =>
+      [c.title, c.preview, t(`agents.${c.agentId}.name`)].some((s) =>
         s.toLowerCase().includes(q),
       ),
     );
-  }, [items, query]);
+  }, [items, query, t]);
 
   const buckets = useMemo(() => groupByBucket(filtered), [filtered]);
 
   return (
     <AppShell>
-      {isMobile ? <MobileHeader title="History" /> : <TopBar />}
+      {isMobile ? <MobileHeader title={t('history.title')} /> : <TopBar />}
       <div
         style={{
           flex: 1,
@@ -52,19 +58,19 @@ export default function History() {
       >
         <div style={{ maxWidth: 880, margin: '0 auto' }}>
           <div className="tw-eyebrow" style={{ marginBottom: 12 }}>
-            Conversations
+            {t('history.eyebrow')}
           </div>
-          <h1 className="tw-h1">History</h1>
+          <h1 className="tw-h1">{t('history.title')}</h1>
           <div
             className="tw-body"
             style={{ color: 'var(--text-2)', marginTop: 8, marginBottom: 28, fontSize: 16 }}
           >
-            Every conversation you've had — open any one to pick up where you left off.
+            {t('history.subtitle')}
           </div>
 
           {error && (
             <div style={{ marginBottom: 20 }}>
-              <Alert variant="destructive" title="Could not load history">
+              <Alert variant="destructive" title={t('history.loadFailed')}>
                 {error}
               </Alert>
             </div>
@@ -73,14 +79,14 @@ export default function History() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, preview, or assistant…"
+            placeholder={t('history.searchPlaceholder')}
             leadingIcon="search"
           />
 
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 28 }}>
             {loading ? (
               <div className="tw-small" style={{ color: 'var(--text-3)' }}>
-                Loading conversations…
+                {t('history.loadingConversations')}
               </div>
             ) : buckets.length === 0 ? (
               <EmptyState query={query} />
@@ -88,7 +94,7 @@ export default function History() {
               buckets.map((b) => (
                 <section key={b.label}>
                   <div className="tw-eyebrow" style={{ marginBottom: 12, paddingLeft: 4 }}>
-                    {b.label}
+                    {t(`time.${b.label}`, { defaultValue: b.label })}
                   </div>
                   <div
                     style={{
@@ -105,6 +111,7 @@ export default function History() {
                         item={item}
                         last={i === b.items.length - 1}
                         onOpen={() => navigate(`/chat/${item.id}`)}
+                        locale={i18n.language}
                       />
                     ))}
                   </div>
@@ -122,9 +129,11 @@ interface HistoryRowProps {
   item: ChatHistoryItem;
   last: boolean;
   onOpen: () => void;
+  locale: string;
 }
 
-function HistoryRow({ item, last, onOpen }: HistoryRowProps) {
+function HistoryRow({ item, last, onOpen, locale }: HistoryRowProps) {
+  const { t } = useTranslation();
   const agent = AGENT_BY_ID[item.agentId];
   return (
     <button
@@ -171,7 +180,7 @@ function HistoryRow({ item, last, onOpen }: HistoryRowProps) {
           }}
         >
           <span style={{ color: 'var(--accent)', fontStyle: 'italic', fontFamily: 'Fraunces, serif' }}>
-            {agent.name}
+            {t(`agents.${agent.id}.name`)}
           </span>
           <span style={{ color: 'var(--text-4)', margin: '0 6px' }}>·</span>
           {item.preview}
@@ -181,13 +190,14 @@ function HistoryRow({ item, last, onOpen }: HistoryRowProps) {
         className="tw-micro"
         style={{ color: 'var(--text-3)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}
       >
-        {formatRelative(item.lastMessageAt)}
+        {formatRelative(item.lastMessageAt, undefined, locale)}
       </div>
     </button>
   );
 }
 
 function EmptyState({ query }: { query: string }) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -201,10 +211,10 @@ function EmptyState({ query }: { query: string }) {
       }}
     >
       <div className="tw-h3-serif" style={{ fontSize: 20, color: 'var(--text)' }}>
-        {query ? 'No conversations match your search.' : 'No conversations yet.'}
+        {query ? t('history.emptyWithSearch') : t('history.emptyNoSearch')}
       </div>
       <div className="tw-small" style={{ marginTop: 6 }}>
-        {query ? 'Try a different word, or clear the search to see everything.' : 'Start one from the home screen.'}
+        {query ? t('history.emptyBodySearch') : t('history.emptyBodyStart')}
       </div>
     </div>
   );

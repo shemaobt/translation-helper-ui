@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useRoute } from 'wouter';
 import {
   AssistantMessage,
@@ -12,6 +13,7 @@ import { useChat } from '../lib/hooks/useChat';
 import { useIsMobile } from '../lib/hooks/useIsMobile';
 
 export default function Chat() {
+  const { t } = useTranslation();
   const [, params] = useRoute<{ chatId?: string }>('/chat/:chatId?');
   const isMobile = useIsMobile();
   const {
@@ -44,7 +46,7 @@ export default function Chat() {
         >
           {error && !isStreaming && (
             <div style={{ marginBottom: 16 }}>
-              <Alert variant="destructive" title="Couldn't load this chat">
+              <Alert variant="destructive" title={t('chat.couldNotLoadAlert')}>
                 {error}
               </Alert>
             </div>

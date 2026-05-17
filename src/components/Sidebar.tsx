@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'wouter';
 import { useChatHistory } from '../lib/hooks/useChatHistory';
 import { useClickOutside } from '../lib/hooks/useClickOutside';
 import { useToast } from '../lib/hooks/useToast';
 import { useAuthStore } from '../lib/stores/authStore';
+import { LanguagePickerDialog } from './LanguagePickerDialog';
 import { Icon, type IconName } from './Icon';
 import { DropdownMenu, type DropdownItem, IconButton, Wordmark } from './primitives';
 import { useTheme } from './Theme';
@@ -12,7 +14,7 @@ type ItemId = 'new' | 'home' | 'search' | 'discover' | 'history' | 'spaces';
 
 interface NavItem {
   id: ItemId;
-  label: string;
+  labelKey: string;
   icon: IconName;
   href?: string;
   accent?: boolean;
@@ -20,13 +22,13 @@ interface NavItem {
 }
 
 const NAV: NavItem[][] = [
-  [{ id: 'new', label: 'New thread', icon: 'plus', accent: true, href: '/' }],
+  [{ id: 'new', labelKey: 'nav.newThread', icon: 'plus', accent: true, href: '/' }],
   [
-    { id: 'home', label: 'Home', icon: 'home', href: '/' },
-    { id: 'search', label: 'Search', icon: 'search', disabled: true },
-    { id: 'discover', label: 'Discover', icon: 'compass', disabled: true },
-    { id: 'history', label: 'History', icon: 'clock', href: '/history' },
-    { id: 'spaces', label: 'Translation Spaces', icon: 'languages', disabled: true },
+    { id: 'home', labelKey: 'nav.home', icon: 'home', href: '/' },
+    { id: 'search', labelKey: 'nav.search', icon: 'search', disabled: true },
+    { id: 'discover', labelKey: 'nav.discover', icon: 'compass', disabled: true },
+    { id: 'history', labelKey: 'nav.history', icon: 'clock', href: '/history' },
+    { id: 'spaces', labelKey: 'nav.translationSpaces', icon: 'languages', disabled: true },
   ],
 ];
 
@@ -43,10 +45,11 @@ interface SidebarProps {
 function userInfoFromAuth(
   authUser: ReturnType<typeof useAuthStore.getState>['user'],
   isAdmin: boolean,
+  adminLabel: string,
 ): { name: string; plan: string } {
   if (!authUser) return { name: 'Guest', plan: 'Translation Helper' };
   const name = authUser.display_name || authUser.email.split('@')[0] || 'You';
-  const plan = isAdmin ? 'Platform admin' : 'Translation Helper';
+  const plan = isAdmin ? adminLabel : 'Translation Helper';
   return { name, plan };
 }
 
@@ -57,9 +60,11 @@ export function Sidebar({
   open = false,
   onClose,
 }: SidebarProps) {
+  const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
   const resolvedIsAdmin = isAdmin ?? authUser?.is_platform_admin ?? false;
-  const resolvedUser = user ?? userInfoFromAuth(authUser, resolvedIsAdmin);
+  const resolvedUser =
+    user ?? userInfoFromAuth(authUser, resolvedIsAdmin, t('profile.platformAdmin'));
   if (mobile) {
     if (!open) return null;
     return (
@@ -191,8 +196,10 @@ function SidebarBody({
   collapseIcon,
   onItemNavigated,
 }: SidebarBodyProps) {
+  const { t } = useTranslation();
   const [location, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { mode, toggle } = useTheme();
   const toast = useToast();
@@ -212,7 +219,7 @@ function SidebarBody({
       onItemNavigated?.();
       return;
     }
-    toast.show({ title: `${item.label} — coming soon` });
+    toast.show({ title: t('common.comingSoon', { label: t(item.labelKey) }) });
   };
 
   const goAndClose = (to: string) => {
@@ -221,29 +228,41 @@ function SidebarBody({
   };
 
   const userMenu: DropdownItem[] = [
-    { label: 'Profile', icon: 'user', onSelect: () => goAndClose('/profile') },
-    { label: 'Settings', icon: 'settings', onSelect: () => goAndClose('/settings') },
+    { label: t('common.profile'), icon: 'user', onSelect: () => goAndClose('/profile') },
+    { label: t('common.settings'), icon: 'settings', onSelect: () => goAndClose('/settings') },
     { divider: true },
     {
-      label: `Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`,
+      label: t('common.language'),
+      icon: 'languages',
+      onSelect: () => {
+        setMenuOpen(false);
+        setLanguageOpen(true);
+      },
+    },
+    {
+      label: mode === 'dark' ? t('common.switchToLight') : t('common.switchToDark'),
       icon: 'sparkles',
       onSelect: toggle,
     },
     ...(isAdmin
       ? ([
           { divider: true },
-          { section: 'Admin' },
-          { label: 'Agent Prompts', icon: 'sliders', onSelect: () => goAndClose('/admin/prompts') },
+          { section: t('common.admin') },
+          {
+            label: t('common.agentPrompts'),
+            icon: 'sliders',
+            onSelect: () => goAndClose('/admin/prompts'),
+          },
         ] satisfies DropdownItem[])
       : []),
     { divider: true },
     {
-      label: 'Log out',
+      label: t('common.logout'),
       icon: 'log-out',
       destructive: true,
       onSelect: () => {
         void logout();
-        toast.show({ title: 'Signed out' });
+        toast.show({ title: t('common.signedOut') });
         goAndClose('/login');
       },
     },
@@ -270,7 +289,7 @@ function SidebarBody({
           icon={collapseIcon}
           size={28}
           iconSize={15}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('nav.openUserMenu') : t('nav.openUserMenu')}
           onClick={onCollapseToggle}
         />
       </div>
@@ -322,7 +341,7 @@ function SidebarBody({
             cursor: 'pointer',
             justifyContent: collapsed ? 'center' : 'flex-start',
           }}
-          aria-label="Open user menu"
+          aria-label={t('nav.openUserMenu')}
         >
           <UserBadge name={user.name} />
           {!collapsed && (
@@ -354,6 +373,7 @@ function SidebarBody({
           </div>
         )}
       </div>
+      <LanguagePickerDialog open={languageOpen} onClose={() => setLanguageOpen(false)} />
     </>
   );
 }
@@ -393,15 +413,16 @@ function RecentChats({
   activeLocation: string;
   onNavigated?: () => void;
 }) {
+  const { t } = useTranslation();
   const { chats } = useChatHistory();
   const recent = chats
     .slice(0, 4)
-    .map((c) => ({ id: c.id, title: c.title || 'Untitled chat' }));
+    .map((c) => ({ id: c.id, title: c.title || t('history.untitledChat') }));
   if (recent.length === 0) return null;
   return (
     <div style={{ marginTop: 'auto' }}>
       <div className="tw-eyebrow" style={{ padding: '8px 14px 6px' }}>
-        Recent
+        {t('nav.recent')}
       </div>
       {recent.map((c) => {
         const active = activeLocation === `/chat/${c.id}`;
@@ -456,8 +477,10 @@ interface SidebarLinkProps {
 }
 
 function SidebarLink({ item, active, collapsed, onClick }: SidebarLinkProps) {
+  const { t } = useTranslation();
   const disabled = item.disabled === true;
   const cursor = disabled ? 'not-allowed' : 'pointer';
+  const label = t(item.labelKey);
 
   const body: ReactNode = item.accent ? (
     <span
@@ -478,7 +501,7 @@ function SidebarLink({ item, active, collapsed, onClick }: SidebarLinkProps) {
         color: 'var(--text)',
         cursor,
       }}
-      title={collapsed ? item.label : undefined}
+      title={collapsed ? label : undefined}
     >
       <span
         style={{
@@ -495,7 +518,7 @@ function SidebarLink({ item, active, collapsed, onClick }: SidebarLinkProps) {
       >
         <Icon name={item.icon} size={13} strokeWidth={2.2} />
       </span>
-      {!collapsed && item.label}
+      {!collapsed && label}
     </span>
   ) : (
     <span
@@ -515,11 +538,19 @@ function SidebarLink({ item, active, collapsed, onClick }: SidebarLinkProps) {
         cursor,
         opacity: disabled ? 0.4 : 1,
       }}
-      title={collapsed ? `${item.label}${disabled ? ' — coming soon' : ''}` : disabled ? 'Coming soon' : undefined}
+      title={
+        collapsed
+          ? disabled
+            ? t('common.comingSoon', { label })
+            : label
+          : disabled
+            ? t('nav.soon')
+            : undefined
+      }
     >
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
         <Icon name={item.icon} size={18} strokeWidth={1.7} />
-        {!collapsed && item.label}
+        {!collapsed && label}
       </span>
       {!collapsed && disabled && (
         <span
@@ -535,7 +566,7 @@ function SidebarLink({ item, active, collapsed, onClick }: SidebarLinkProps) {
             border: '1px solid var(--border-subtle)',
           }}
         >
-          Soon
+          {t('nav.soon')}
         </span>
       )}
     </span>

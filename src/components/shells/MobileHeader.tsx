@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDrawer } from './DrawerContext';
 import { IconButton, Wordmark } from '../primitives';
 import { useTheme } from '../Theme';
@@ -10,8 +11,9 @@ interface MobileHeaderProps {
 }
 
 export function MobileHeader({ title, actions, showBrand = false }: MobileHeaderProps) {
+  const { t } = useTranslation();
   const { openDrawer } = useDrawer();
-  const { toggle } = useTheme();
+  const { mode, toggle } = useTheme();
 
   return (
     <div
@@ -28,7 +30,7 @@ export function MobileHeader({ title, actions, showBrand = false }: MobileHeader
         zIndex: 5,
       }}
     >
-      <IconButton icon="menu" onClick={openDrawer} aria-label="Open menu" />
+      <IconButton icon="menu" onClick={openDrawer} aria-label={t('nav.openUserMenu')} />
       <div
         style={{
           flex: 1,
@@ -58,7 +60,7 @@ export function MobileHeader({ title, actions, showBrand = false }: MobileHeader
         <IconButton
           icon="sparkles"
           onClick={toggle}
-          aria-label="Toggle theme"
+          aria-label={mode === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}
           iconSize={15}
         />
       )}

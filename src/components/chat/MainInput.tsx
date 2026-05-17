@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Agent } from '../../lib/agents';
 import { audioApi } from '../../lib/api';
 import type { InputState } from '../../lib/hooks/useChat';
@@ -46,6 +47,7 @@ export function MainInput({
   showHint,
   disabled = false,
 }: MainInputProps) {
+  const { t } = useTranslation();
   const taRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
@@ -57,7 +59,7 @@ export function MainInput({
     onMicStateChange?.('idle');
     onMicClick?.();
     if (!blob) {
-      toast.show({ title: 'No audio captured' });
+      toast.show({ title: t('chat.noAudioCaptured') });
       return;
     }
     setTranscribing(true);
@@ -66,11 +68,11 @@ export function MainInput({
       const trimmed = text.trim();
       const next = value ? `${value} ${trimmed}` : trimmed;
       onChange(next);
-      toast.show({ variant: 'success', title: 'Transcribed' });
+      toast.show({ variant: 'success', title: t('chat.transcribed') });
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Transcription failed';
+      const message = e instanceof Error ? e.message : t('chat.transcriptionFailed');
       setLocalError(message);
-      toast.show({ variant: 'error', title: 'Transcription failed', body: message });
+      toast.show({ variant: 'error', title: t('chat.transcriptionFailed'), body: message });
     } finally {
       setTranscribing(false);
     }
@@ -78,11 +80,14 @@ export function MainInput({
 
   const recorder = useVoiceRecorder({
     onAutoStop: (blob) => {
-      toast.show({ title: 'Recording limit reached', body: 'Auto-stopped at 5 minutes.' });
+      toast.show({
+        title: t('chat.recordingLimitReached'),
+        body: t('chat.recordingLimitReachedBody'),
+      });
       void transcribeBlob(blob);
     },
   });
-  const onAttach = () => toast.show({ title: 'Attachments — coming soon' });
+  const onAttach = () => toast.show({ title: t('chat.attachmentsComingSoon') });
 
   useEffect(() => {
     if (recorder.error) {
@@ -150,11 +155,11 @@ export function MainInput({
       >
         {isError && (
           <div style={{ margin: 10 }}>
-            <Alert variant="destructive" title="Voice input error">
-              {localError ?? 'Enable mic permissions in your browser settings.'}
+            <Alert variant="destructive" title={t('chat.voiceInputError')}>
+              {localError ?? t('chat.voiceInputErrorBody')}
               {isPermissionDenied(localError) && (
                 <div style={{ marginTop: 6, color: 'var(--text-2)' }}>
-                  Tip: enable microphone access in your browser's site settings, then click the mic again.
+                  {t('chat.voiceInputDeniedTip')}
                 </div>
               )}
             </Alert>
@@ -194,10 +199,10 @@ export function MainInput({
             onKeyDown={handleKey}
             placeholder={
               disabled
-                ? 'Generating response…'
+                ? t('chat.generatingResponse')
                 : transcribing
-                  ? 'Transcribing your voice…'
-                  : 'What can I do for you today?'
+                  ? t('chat.transcribingPlaceholder')
+                  : t('chat.inputPlaceholder')
             }
             rows={1}
             disabled={transcribing || disabled}
@@ -228,7 +233,7 @@ export function MainInput({
             icon="plus"
             variant="soft"
             hoverFill={false}
-            aria-label="Add attachment"
+            aria-label={t('chat.addAttachment')}
             onClick={onAttach}
             disabled={disabled}
           />
@@ -236,7 +241,7 @@ export function MainInput({
             icon={isError ? 'mic-off' : 'mic'}
             onClick={() => void startListening()}
             destructive={isError}
-            aria-label="Voice input"
+            aria-label={t('chat.voiceInput')}
             disabled={disabled}
           />
           <div style={{ flex: 1 }} />
@@ -271,14 +276,14 @@ export function MainInput({
           {!isMobile && (
             <IconButton
               icon="paperclip"
-              aria-label="Attach file"
+              aria-label={t('chat.attachFile')}
               iconSize={15}
               onClick={onAttach}
               disabled={disabled}
             />
           )}
           <button
-            aria-label="Send"
+            aria-label={t('chat.send')}
             disabled={!hasContent || transcribing || disabled}
             onClick={() => hasContent && !disabled && onSend?.(value)}
             className="tw-focusable"
@@ -306,7 +311,7 @@ export function MainInput({
           className="tw-micro"
           style={{ color: 'var(--text-4)', textAlign: 'center', marginTop: 10 }}
         >
-          Enter to send · Shift+Enter for newline
+          {t('chat.enterToSend')}
         </div>
       )}
     </div>

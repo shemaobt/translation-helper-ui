@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next';
 import { Icon } from '../Icon';
 import { Button } from '../primitives';
 
@@ -23,6 +24,7 @@ export function VoiceTakeover({
   onCancel,
   onSend,
 }: VoiceTakeoverProps) {
+  const { t } = useTranslation();
   const limitLabel = maxDurationMs ? formatElapsed(maxDurationMs) : null;
   return (
     <div
@@ -60,7 +62,7 @@ export function VoiceTakeover({
           className="tw-label"
           style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 10 }}
         >
-          Listening…
+          {t('chat.listening')}
           <span style={{ color: 'var(--accent)' }} className="tw-wave">
             <span />
             <span />
@@ -72,8 +74,10 @@ export function VoiceTakeover({
           </span>
         </div>
         <div className="tw-small" style={{ color: 'var(--text-2)', marginTop: 4 }}>
-          Tap <span style={{ color: 'var(--text)', fontWeight: 500 }}>Send</span> when you're
-          done speaking — we'll transcribe and drop it in your message.
+          <Trans
+            i18nKey="chat.tapSendWhenDone"
+            components={{ strong: <span style={{ color: 'var(--text)', fontWeight: 500 }} /> }}
+          />
         </div>
       </div>
       <div
@@ -101,14 +105,14 @@ export function VoiceTakeover({
           {formatElapsed(elapsedMs)}
         </div>
         {approachingLimit && limitLabel && (
-          <div style={{ fontSize: 10 }}>(stopping at {limitLabel})</div>
+          <div style={{ fontSize: 10 }}>{t('chat.stoppingAt', { time: limitLabel })}</div>
         )}
       </div>
       <Button variant="ghost" leadingIcon="x" onClick={onCancel}>
-        Cancel
+        {t('common.cancel')}
       </Button>
       <Button variant="primary" leadingIcon="check" onClick={onSend}>
-        Send
+        {t('chat.send')}
       </Button>
     </div>
   );

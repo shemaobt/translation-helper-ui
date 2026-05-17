@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton, NotifPill } from '../primitives';
 import { useTheme } from '../Theme';
 
@@ -8,6 +9,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ children, style }: TopBarProps) {
+  const { t } = useTranslation();
   const { mode, toggle } = useTheme();
   return (
     <div
@@ -25,7 +27,7 @@ export function TopBar({ children, style }: TopBarProps) {
         icon="sparkles"
         variant="paper"
         onClick={toggle}
-        aria-label={mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        aria-label={mode === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}
         iconSize={15}
         hoverFill={false}
       />

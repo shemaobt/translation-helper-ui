@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AGENT_BY_ID, type AgentId } from '../../lib/agents';
 import { Icon } from '../Icon';
 import { Streaming } from '../primitives';
@@ -19,6 +20,7 @@ export function AssistantMessage({
   copyText,
   children,
 }: AssistantMessageProps) {
+  const { t } = useTranslation();
   const a = AGENT_BY_ID[agent];
   return (
     <div style={{ marginTop: 28 }}>
@@ -47,11 +49,11 @@ export function AssistantMessage({
               fontWeight: 500,
             }}
           >
-            {a.name}
+            {t(`agents.${a.id}.name`)}
           </span>
           <span style={{ width: 3, height: 3, borderRadius: 999, background: 'var(--text-4)' }} />
           <span className="tw-micro" style={{ color: 'var(--text-3)' }}>
-            just now
+            {t('chat.justNow')}
           </span>
         </div>
       )}

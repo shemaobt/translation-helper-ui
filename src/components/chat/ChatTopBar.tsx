@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { AGENT_BY_ID, type AgentId } from '../../lib/agents';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
 import { useToast } from '../../lib/hooks/useToast';
@@ -11,10 +12,12 @@ interface ChatTopBarProps {
 }
 
 export function ChatTopBar({ title, agent }: ChatTopBarProps) {
+  const { t } = useTranslation();
   const a = AGENT_BY_ID[agent];
   const toast = useToast();
   const isMobile = useIsMobile();
   const { openDrawer } = useDrawer();
+  const agentName = t(`agents.${agent}.name`);
 
   return (
     <div
@@ -27,11 +30,16 @@ export function ChatTopBar({ title, agent }: ChatTopBarProps) {
       }}
     >
       {isMobile && (
-        <IconButton icon="menu" variant="soft" onClick={openDrawer} aria-label="Open menu" />
+        <IconButton
+          icon="menu"
+          variant="soft"
+          onClick={openDrawer}
+          aria-label={t('nav.openUserMenu')}
+        />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <button
-          onClick={() => toast.show({ title: 'Renaming chats — coming soon' })}
+          onClick={() => toast.show({ title: t('common.comingSoon', { label: 'Rename' }) })}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -62,20 +70,20 @@ export function ChatTopBar({ title, agent }: ChatTopBarProps) {
           className="tw-micro"
           style={{ color: 'var(--text-3)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6 }}
         >
-          <Icon name={a.icon as never} size={11} /> {a.name}
+          <Icon name={a.icon as never} size={11} /> {agentName}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <IconButton
           icon="volume-2"
-          aria-label="Voice output"
-          onClick={() => toast.show({ title: 'Voice output — coming soon' })}
+          aria-label={t('chat.readAloud')}
+          onClick={() => toast.show({ title: t('common.comingSoon', { label: t('chat.readAloud') }) })}
         />
         {!isMobile && <NotifPill />}
         <IconButton
           icon="more-horizontal"
-          aria-label="More"
-          onClick={() => toast.show({ title: 'Chat menu — coming soon' })}
+          aria-label={t('chat.regenerate')}
+          onClick={() => toast.show({ title: t('common.comingSoon', { label: 'Menu' }) })}
         />
       </div>
     </div>

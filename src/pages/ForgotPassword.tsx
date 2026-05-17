@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { Icon } from '../components/Icon';
 import { Alert, Button, Input } from '../components/primitives';
@@ -6,6 +7,7 @@ import { AuthShell } from '../components/shells';
 import { useAuthStore } from '../lib/stores/authStore';
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -23,7 +25,7 @@ export default function ForgotPassword() {
       await forgotPassword(email);
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send reset link');
+      setError(err instanceof Error ? err.message : t('auth.couldNotSendReset'));
     } finally {
       setSubmitting(false);
     }
@@ -33,26 +35,26 @@ export default function ForgotPassword() {
     <AuthShell
       alert={
         error ? (
-          <Alert variant="destructive" title="Could not send reset link">
+          <Alert variant="destructive" title={t('auth.couldNotSendReset')}>
             {error}
           </Alert>
         ) : undefined
       }
     >
       <div className="tw-h2" style={{ marginBottom: 6 }}>
-        Reset your password.
+        {t('auth.resetPasswordTitle')}
       </div>
       <div className="tw-small" style={{ color: 'var(--text-2)', marginBottom: 24 }}>
-        Enter your email and we'll send you a link.
+        {t('auth.resetPasswordSubtitle')}
       </div>
       <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Input
-          label="Email"
+          label={t('auth.email')}
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           leadingIcon="mail"
-          placeholder="you@translation.org"
+          placeholder={t('auth.emailPlaceholder')}
           autoComplete="email"
           required
         />
@@ -64,11 +66,11 @@ export default function ForgotPassword() {
           fullWidth
           disabled={submitting}
         >
-          {submitting ? 'Sending…' : 'Send reset link'}
+          {submitting ? t('auth.sendingResetLink') : t('auth.sendResetLink')}
         </Button>
         <div style={{ textAlign: 'center', marginTop: 4 }}>
           <Button variant="ghost" leadingIcon="chevron-left" onClick={() => navigate('/login')}>
-            Back to sign in
+            {t('auth.backToSignIn')}
           </Button>
         </div>
       </form>
@@ -77,6 +79,7 @@ export default function ForgotPassword() {
 }
 
 function SentState({ email, onBack }: { email: string; onBack: () => void }) {
+  const { t } = useTranslation();
   return (
     <AuthShell>
       <div
@@ -104,13 +107,20 @@ function SentState({ email, onBack }: { email: string; onBack: () => void }) {
         >
           <Icon name="mail" size={24} strokeWidth={1.6} />
         </div>
-        <div className="tw-h2">Check your email.</div>
+        <div className="tw-h2">{t('auth.checkYourEmail')}</div>
         <div className="tw-small" style={{ color: 'var(--text-2)', maxWidth: 320 }}>
-          If an account exists, we sent a reset link to{' '}
-          <span style={{ color: 'var(--text)', fontWeight: 500 }}>{email || 'you'}</span>.
+          {email ? (
+            <Trans
+              i18nKey="auth.checkYourEmailBody"
+              values={{ email }}
+              components={{ 1: <span style={{ color: 'var(--text)', fontWeight: 500 }} /> }}
+            />
+          ) : (
+            t('auth.checkYourEmailBodyFallback')
+          )}
         </div>
         <Button variant="ghost" leadingIcon="chevron-left" style={{ marginTop: 10 }} onClick={onBack}>
-          Back to sign in
+          {t('auth.backToSignIn')}
         </Button>
       </div>
     </AuthShell>

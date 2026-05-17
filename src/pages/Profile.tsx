@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { Icon } from '../components/Icon';
 import { Avatar, Button, Input, Pill } from '../components/primitives';
@@ -8,6 +9,7 @@ import { useIsMobile } from '../lib/hooks/useIsMobile';
 import { useToast } from '../lib/hooks/useToast';
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user, draftDisplayName, setDraftDisplayName, dirty, saving, save } =
     useCurrentUser();
   const toast = useToast();
@@ -17,11 +19,11 @@ export default function Profile() {
   const onSaveDisplayName = async () => {
     try {
       await save();
-      toast.show({ variant: 'success', title: 'Display name updated' });
+      toast.show({ variant: 'success', title: t('profile.displayNameUpdated') });
     } catch (e) {
       toast.show({
         variant: 'error',
-        title: 'Could not update display name',
+        title: t('profile.couldNotUpdateDisplayName'),
         body: e instanceof Error ? e.message : undefined,
       });
     }
@@ -29,7 +31,7 @@ export default function Profile() {
 
   return (
     <AppShell>
-      {isMobile ? <MobileHeader title="Settings" /> : <TopBar />}
+      {isMobile ? <MobileHeader title={t('profile.title')} /> : <TopBar />}
       <div
         style={{
           flex: 1,
@@ -39,19 +41,19 @@ export default function Profile() {
       >
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div className="tw-eyebrow" style={{ marginBottom: 12 }}>
-            Account
+            {t('profile.eyebrow')}
           </div>
-          <h1 className="tw-h1">Settings</h1>
+          <h1 className="tw-h1">{t('profile.title')}</h1>
           <div
             className="tw-body"
             style={{ color: 'var(--text-2)', marginTop: 8, marginBottom: 36, fontSize: 16 }}
           >
-            Manage your profile and account.
+            {t('profile.manageBlurb')}
           </div>
 
           <SettingsCard
-            title="Profile picture"
-            subtitle="JPG, PNG up to 5 MB. Square crops work best."
+            title={t('profile.profilePicture')}
+            subtitle={t('profile.profilePictureSubtitle')}
           >
             <div
               style={{
@@ -66,50 +68,53 @@ export default function Profile() {
                 <Button
                   variant="secondary"
                   leadingIcon="upload"
-                  onClick={() => toast.show({ title: 'Photo upload — coming soon' })}
+                  onClick={() => toast.show({ title: t('auth.photoUploadComingSoon') })}
                 >
-                  Upload new
+                  {t('profile.uploadNew')}
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => toast.show({ title: 'Photo removed' })}
+                  onClick={() => toast.show({ title: t('profile.photoRemoved') })}
                 >
-                  Remove
+                  {t('profile.remove')}
                 </Button>
               </div>
             </div>
           </SettingsCard>
 
-          <SettingsCard title="Account information" subtitle="Synced from your account.">
+          <SettingsCard
+            title={t('profile.accountInformation')}
+            subtitle={t('profile.accountInformationSubtitle')}
+          >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <ReadOnlyRow label="Email" value={user.email} copyable />
+              <ReadOnlyRow label={t('profile.emailLabel')} value={user.email} copyable />
             </div>
           </SettingsCard>
 
           <SettingsCard
-            title="Display name"
-            subtitle="How you appear to others across Translation Helper."
-            actionLabel={saving ? 'Saving…' : 'Save changes'}
+            title={t('profile.displayName')}
+            subtitle={t('profile.displayNameCardSubtitle')}
+            actionLabel={saving ? t('profile.saving') : t('profile.saveChanges')}
             actionDisabled={!dirty || saving}
             onAction={() => void onSaveDisplayName()}
           >
             <Input
-              label="Display name"
+              label={t('profile.displayName')}
               value={draftDisplayName}
               onChange={(e) => setDraftDisplayName(e.target.value)}
-              placeholder="Ana Costa"
+              placeholder={t('profile.displayNamePlaceholder')}
               autoComplete="name"
             />
           </SettingsCard>
 
           <SettingsCard
-            title="Your access"
-            subtitle="Roles are managed by your platform admin."
+            title={t('profile.yourAccess')}
+            subtitle={t('profile.yourAccessSubtitle')}
           >
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {user.isPlatformAdmin && (
                 <Pill variant="accent" leadingIcon="sparkles">
-                  Platform admin
+                  {t('profile.platformAdmin')}
                 </Pill>
               )}
               {user.appRoles.length > 0 ? (
@@ -120,22 +125,20 @@ export default function Profile() {
                 ))
               ) : !user.isPlatformAdmin ? (
                 <div className="tw-small" style={{ color: 'var(--text-2)' }}>
-                  No translation-helper roles yet. An admin needs to approve your access
-                  request.
+                  {t('profile.noRolesYet')}
                 </div>
               ) : null}
             </div>
           </SettingsCard>
 
           <SettingsCard
-            title="Change password"
-            subtitle="We'll email you a secure reset link to set a new password."
-            actionLabel="Email me a reset link"
+            title={t('profile.changePassword')}
+            subtitle={t('profile.changePasswordSubtitle')}
+            actionLabel={t('profile.changePasswordAction')}
             onAction={() => navigate('/forgot-password')}
           >
             <div className="tw-small" style={{ color: 'var(--text-2)' }}>
-              For security, password changes go through the same flow as a forgotten password.
-              You'll receive an email with a one-time link.
+              {t('profile.changePasswordExplain')}
             </div>
           </SettingsCard>
         </div>
@@ -151,6 +154,7 @@ interface ReadOnlyRowProps {
 }
 
 function ReadOnlyRow({ label, value, copyable }: ReadOnlyRowProps) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -180,7 +184,7 @@ function ReadOnlyRow({ label, value, copyable }: ReadOnlyRowProps) {
             border: 0,
           }}
         >
-          <Icon name="copy" size={13} /> Copy
+          <Icon name="copy" size={13} /> {t('chat.copy')}
         </button>
       )}
     </div>

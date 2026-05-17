@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { audioApi } from '../../lib/api';
 import { useToast } from '../../lib/hooks/useToast';
 import { IconButton } from '../primitives';
@@ -8,6 +9,7 @@ interface MessageActionsProps {
 }
 
 export function MessageActions({ copyText }: MessageActionsProps) {
+  const { t } = useTranslation();
   const toast = useToast();
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -27,14 +29,14 @@ export function MessageActions({ copyText }: MessageActionsProps) {
 
   const onCopy = async () => {
     if (!copyText) {
-      toast.show({ title: 'Nothing to copy yet', variant: 'info' });
+      toast.show({ title: t('chat.nothingToCopy'), variant: 'info' });
       return;
     }
     try {
       await navigator.clipboard?.writeText(copyText);
-      toast.show({ title: 'Copied to clipboard', variant: 'success' });
+      toast.show({ title: t('chat.copied'), variant: 'success' });
     } catch {
-      toast.show({ title: "Couldn't copy to clipboard", variant: 'error' });
+      toast.show({ title: t('chat.couldntCopy'), variant: 'error' });
     }
   };
 
@@ -54,7 +56,7 @@ export function MessageActions({ copyText }: MessageActionsProps) {
       return;
     }
     if (!copyText || copyText.trim().length === 0) {
-      toast.show({ title: 'Nothing to read aloud', variant: 'info' });
+      toast.show({ title: t('chat.nothingToReadAloud'), variant: 'info' });
       return;
     }
     try {
@@ -70,33 +72,33 @@ export function MessageActions({ copyText }: MessageActionsProps) {
       audioRef.current = audio;
       audio.onended = stopPlayback;
       audio.onerror = () => {
-        toast.show({ title: 'Playback failed', variant: 'error' });
+        toast.show({ title: t('chat.playbackFailed'), variant: 'error' });
         stopPlayback();
       };
       await audio.play();
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Read aloud failed';
-      toast.show({ title: 'Read aloud failed', variant: 'error', body: message });
+      const message = e instanceof Error ? e.message : t('chat.readAloudFailed');
+      toast.show({ title: t('chat.readAloudFailed'), variant: 'error', body: message });
       stopPlayback();
     }
   };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 12 }}>
-      <IconButton icon="copy" size={32} iconSize={13} aria-label="Copy" onClick={onCopy} />
+      <IconButton icon="copy" size={32} iconSize={13} aria-label={t('chat.copy')} onClick={onCopy} />
       <IconButton
         icon={playing ? 'mic-off' : 'volume-2'}
         size={32}
         iconSize={13}
-        aria-label={playing ? 'Stop reading' : 'Read aloud'}
+        aria-label={playing ? t('chat.stopReading') : t('chat.readAloud')}
         onClick={() => void onSpeak()}
       />
       <IconButton
         icon="refresh"
         size={32}
         iconSize={13}
-        aria-label="Regenerate"
-        onClick={() => toast.show({ title: 'Regenerate — coming soon' })}
+        aria-label={t('chat.regenerate')}
+        onClick={() => toast.show({ title: t('chat.regenerateComingSoon') })}
       />
     </div>
   );
