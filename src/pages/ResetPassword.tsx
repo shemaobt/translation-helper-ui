@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useSearch } from 'wouter';
 import { Icon } from '../components/Icon';
 import { Alert, Button, Input, Streaming } from '../components/primitives';
@@ -8,6 +9,7 @@ import { useAuthStore } from '../lib/stores/authStore';
 type State = 'form' | 'invalid' | 'success';
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -22,8 +24,8 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (state === 'success') {
-      const t = setTimeout(() => navigate('/login?status=reset'), 1500);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => navigate('/login?status=reset'), 1500);
+      return () => clearTimeout(timer);
     }
   }, [state, navigate]);
 
@@ -41,11 +43,11 @@ export default function ResetPassword() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('auth.passwordTooShort'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('auth.passwordsDontMatch'));
       return;
     }
     setSubmitting(true);
@@ -53,7 +55,7 @@ export default function ResetPassword() {
       await reset(token, password);
       setState('success');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Reset failed.');
+      setError(err instanceof Error ? err.message : t('auth.resetGenericError'));
     } finally {
       setSubmitting(false);
     }
@@ -63,35 +65,35 @@ export default function ResetPassword() {
     <AuthShell
       alert={
         error ? (
-          <Alert variant="destructive" title="Reset failed">
+          <Alert variant="destructive" title={t('auth.resetFailed')}>
             {error}
           </Alert>
         ) : undefined
       }
     >
       <div className="tw-h2" style={{ marginBottom: 6 }}>
-        Set a new password.
+        {t('auth.setNewPassword')}
       </div>
       <div className="tw-small" style={{ color: 'var(--text-2)', marginBottom: 24 }}>
-        Choose something you haven't used before.
+        {t('auth.setNewPasswordSubtitle')}
       </div>
       <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Input
-          label="New password"
+          label={t('auth.newPassword')}
           type="password"
           leadingIcon="lock"
-          hint="At least 8 characters."
-          placeholder="••••••••"
+          hint={t('auth.passwordHint')}
+          placeholder={t('auth.passwordPlaceholder')}
           value={password}
           onChange={(e) => setPassword(e.currentTarget.value)}
           required
           autoComplete="new-password"
         />
         <Input
-          label="Confirm new password"
+          label={t('auth.confirmNewPassword')}
           type="password"
           leadingIcon="lock"
-          placeholder="Re-enter password"
+          placeholder={t('auth.confirmNewPasswordPlaceholder')}
           value={confirm}
           onChange={(e) => setConfirm(e.currentTarget.value)}
           required
@@ -105,7 +107,7 @@ export default function ResetPassword() {
           fullWidth
           disabled={submitting}
         >
-          {submitting ? 'Updating…' : 'Reset password'}
+          {submitting ? t('auth.updating') : t('auth.resetPasswordButton')}
         </Button>
       </form>
     </AuthShell>
@@ -113,26 +115,27 @@ export default function ResetPassword() {
 }
 
 function InvalidState({ onRetry, onSignIn }: { onRetry: () => void; onSignIn: () => void }) {
+  const { t } = useTranslation();
   return (
     <AuthShell
       alert={
-        <Alert variant="destructive" title="This reset link is invalid or has expired.">
-          Reset links are good for 1 hour.
+        <Alert variant="destructive" title={t('auth.linkInvalidTitle')}>
+          {t('auth.linkInvalidBody')}
         </Alert>
       }
     >
       <div className="tw-h2" style={{ marginBottom: 6 }}>
-        Reset your password.
+        {t('auth.resetPasswordTitle')}
       </div>
       <div className="tw-small" style={{ color: 'var(--text-2)', marginBottom: 24 }}>
-        You'll need a fresh link to continue.
+        {t('auth.linkInvalidSubtitle')}
       </div>
       <Button variant="primary" size="md" leadingIcon="refresh" fullWidth onClick={onRetry}>
-        Request a new link
+        {t('auth.requestNewLink')}
       </Button>
       <div style={{ textAlign: 'center', marginTop: 14 }}>
         <Button variant="ghost" onClick={onSignIn}>
-          Back to sign in
+          {t('auth.backToSignIn')}
         </Button>
       </div>
     </AuthShell>
@@ -140,6 +143,7 @@ function InvalidState({ onRetry, onSignIn }: { onRetry: () => void; onSignIn: ()
 }
 
 function SuccessState() {
+  const { t } = useTranslation();
   return (
     <AuthShell>
       <div
@@ -166,9 +170,9 @@ function SuccessState() {
         >
           <Icon name="check" size={26} strokeWidth={2.4} />
         </div>
-        <div className="tw-h2">Password updated.</div>
+        <div className="tw-h2">{t('auth.passwordUpdated')}</div>
         <div className="tw-small" style={{ color: 'var(--text-2)' }}>
-          Redirecting to sign in…
+          {t('auth.redirectingSignIn')}
         </div>
         <span style={{ color: 'var(--text-3)', marginTop: 4 }}>
           <Streaming />

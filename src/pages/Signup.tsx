@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'wouter';
 import { Icon } from '../components/Icon';
 import { Alert, Button, Input, Select } from '../components/primitives';
 import { AuthShell } from '../components/shells';
-import { ROLE_OPTIONS } from '../lib/agents';
+import { ROLE_OPTION_KEYS, type RoleOptionKey } from '../lib/agents';
 import { useToast } from '../lib/hooks/useToast';
 import { useAuthStore } from '../lib/stores/authStore';
 
@@ -14,7 +15,7 @@ interface SignupForm {
   password: string;
   confirmPassword: string;
   organization: string;
-  role: string;
+  role: RoleOptionKey;
 }
 
 const initialForm = (): SignupForm => ({
@@ -24,10 +25,11 @@ const initialForm = (): SignupForm => ({
   password: '',
   confirmPassword: '',
   organization: '',
-  role: ROLE_OPTIONS[0],
+  role: ROLE_OPTION_KEYS[0],
 });
 
 export default function Signup() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<SignupForm>(initialForm);
@@ -39,11 +41,11 @@ export default function Signup() {
   const onCreate = async () => {
     setError(null);
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('auth.passwordsDontMatch'));
       return;
     }
     if (form.password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('auth.passwordTooShort'));
       return;
     }
     setSubmitting(true);
@@ -56,27 +58,27 @@ export default function Signup() {
       if (accessRequested) {
         toast.show({
           variant: 'success',
-          title: 'Account created',
-          body: 'An admin will review your access shortly.',
+          title: t('auth.accountCreated'),
+          body: t('auth.accountCreatedSuccessBody'),
         });
         navigate('/login?status=pending');
       } else {
         toast.show({
           variant: 'warning',
-          title: 'Account created',
-          body: "We couldn't queue your access request. Sign in and try again from Settings.",
+          title: t('auth.accountCreated'),
+          body: t('auth.accountCreatedWarningBody'),
         });
         navigate('/login');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create account');
+      setError(err instanceof Error ? err.message : t('auth.couldNotCreate'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const alert = error ? (
-    <Alert variant="destructive" title="Signup failed">
+    <Alert variant="destructive" title={t('auth.signupFailed')}>
       {error}
     </Alert>
   ) : undefined;
@@ -86,10 +88,10 @@ export default function Signup() {
       <ProgressBar step={step} />
 
       <div className="tw-h2" style={{ marginBottom: 6 }}>
-        {step === 1 ? 'Create your account.' : 'Tell us about your work.'}
+        {step === 1 ? t('auth.createYourAccount') : t('auth.tellAboutYourWork')}
       </div>
       <div className="tw-small" style={{ color: 'var(--text-2)', marginBottom: 24 }}>
-        {step === 1 ? 'A few details to get you set up.' : 'Helps us tailor the experience.'}
+        {step === 1 ? t('auth.fewDetailsToSetUp') : t('auth.helpsUsTailor')}
       </div>
 
       {step === 1 ? (
@@ -106,9 +108,9 @@ export default function Signup() {
 
       <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--border-subtle)' }}>
         <div className="tw-small" style={{ textAlign: 'center', color: 'var(--text-2)' }}>
-          Already have an account?{' '}
+          {t('auth.alreadyHaveAccount')}{' '}
           <Link href="/login" style={{ color: 'var(--accent)', fontWeight: 500 }}>
-            Sign in
+            {t('auth.signIn')}
           </Link>
         </div>
       </div>
@@ -117,6 +119,7 @@ export default function Signup() {
 }
 
 function ProgressBar({ step }: { step: 1 | 2 }) {
+  const { t } = useTranslation();
   return (
     <div style={{ marginBottom: 24 }}>
       <div
@@ -127,9 +130,9 @@ function ProgressBar({ step }: { step: 1 | 2 }) {
           marginBottom: 10,
         }}
       >
-        <span className="tw-eyebrow">Step {step} of 2</span>
+        <span className="tw-eyebrow">{t('auth.stepOf', { current: step, total: 2 })}</span>
         <span className="tw-micro" style={{ color: 'var(--text-3)' }}>
-          {step === 1 ? 'Account' : 'Profile'}
+          {step === 1 ? t('auth.stepAccount') : t('auth.stepProfile')}
         </span>
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
@@ -156,6 +159,7 @@ function AccountStep({
   setForm: (updater: (prev: SignupForm) => SignupForm) => void;
   onNext: () => void;
 }) {
+  const { t } = useTranslation();
   const patch = (key: keyof SignupForm, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -171,16 +175,16 @@ function AccountStep({
     >
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         <Input
-          label="First name"
-          placeholder="Ana"
+          label={t('auth.firstName')}
+          placeholder={t('auth.firstNamePlaceholder')}
           autoComplete="given-name"
           value={form.firstName}
           onChange={(e) => patch('firstName', e.currentTarget.value)}
           required
         />
         <Input
-          label="Last name"
-          placeholder="Costa"
+          label={t('auth.lastName')}
+          placeholder={t('auth.lastNamePlaceholder')}
           autoComplete="family-name"
           value={form.lastName}
           onChange={(e) => patch('lastName', e.currentTarget.value)}
@@ -188,9 +192,9 @@ function AccountStep({
         />
       </div>
       <Input
-        label="Email"
+        label={t('auth.email')}
         type="email"
-        placeholder="you@translation.org"
+        placeholder={t('auth.emailPlaceholder')}
         leadingIcon="mail"
         autoComplete="email"
         value={form.email}
@@ -198,20 +202,20 @@ function AccountStep({
         required
       />
       <Input
-        label="Password"
+        label={t('auth.password')}
         type="password"
-        placeholder="At least 8 characters"
+        placeholder={t('auth.passwordCreatePlaceholder')}
         leadingIcon="lock"
-        hint="At least 8 characters."
+        hint={t('auth.passwordHint')}
         autoComplete="new-password"
         value={form.password}
         onChange={(e) => patch('password', e.currentTarget.value)}
         required
       />
       <Input
-        label="Confirm password"
+        label={t('auth.confirmPassword')}
         type="password"
-        placeholder="Re-enter password"
+        placeholder={t('auth.confirmPasswordPlaceholder')}
         leadingIcon="lock"
         autoComplete="new-password"
         value={form.confirmPassword}
@@ -226,7 +230,7 @@ function AccountStep({
         fullWidth
         style={{ marginTop: 8 }}
       >
-        Continue
+        {t('common.continue')}
       </Button>
     </form>
   );
@@ -245,29 +249,30 @@ function ProfileStep({
   onCreate: () => void;
   submitting: boolean;
 }) {
-  const patch = (key: keyof SignupForm, value: string) =>
+  const { t } = useTranslation();
+  const patch = <K extends keyof SignupForm>(key: K, value: SignupForm[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <AvatarUploader />
       <Input
-        label="Organization"
-        placeholder="YWAM Brasil — Belo Horizonte"
+        label={t('auth.organization')}
+        placeholder={t('auth.organizationPlaceholder')}
         value={form.organization}
         onChange={(e) => patch('organization', e.currentTarget.value)}
         disabled={submitting}
       />
       <Select
-        label="Your role"
+        label={t('auth.yourRole')}
         value={form.role}
-        onChange={(v) => patch('role', v)}
+        onChange={(v) => patch('role', v as RoleOptionKey)}
         disabled={submitting}
-        options={ROLE_OPTIONS.map((r) => ({ value: r, label: r }))}
+        options={ROLE_OPTION_KEYS.map((r) => ({ value: r, label: t(`agents.roleOptions.${r}`) }))}
       />
       <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
         <Button variant="ghost" leadingIcon="chevron-left" onClick={onBack}>
-          Back
+          {t('common.back')}
         </Button>
         <Button
           variant="primary"
@@ -276,7 +281,7 @@ function ProfileStep({
           onClick={onCreate}
           disabled={submitting}
         >
-          {submitting ? 'Creating…' : 'Create account'}
+          {submitting ? t('auth.creatingAccount') : t('auth.createAccount')}
         </Button>
       </div>
     </div>
@@ -284,6 +289,7 @@ function ProfileStep({
 }
 
 function AvatarUploader() {
+  const { t } = useTranslation();
   const toast = useToast();
   return (
     <div
@@ -312,7 +318,7 @@ function AvatarUploader() {
           <Icon name="user" size={40} strokeWidth={1.5} />
         </div>
         <button
-          onClick={() => toast.show({ title: 'Photo upload — coming soon' })}
+          onClick={() => toast.show({ title: t('auth.photoUploadComingSoon') })}
           style={{
             position: 'absolute',
             right: -2,
@@ -329,13 +335,13 @@ function AvatarUploader() {
             boxShadow: 'var(--shadow-sm)',
             cursor: 'pointer',
           }}
-          aria-label="Upload photo"
+          aria-label={t('auth.addPhotoOptional')}
         >
           <Icon name="camera" size={14} />
         </button>
       </div>
       <div className="tw-micro" style={{ color: 'var(--text-3)' }}>
-        Add a photo (optional)
+        {t('auth.addPhotoOptional')}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useSearch } from 'wouter';
 import { Alert, Button, Input } from '../components/primitives';
 import { AuthShell } from '../components/shells';
@@ -9,27 +10,27 @@ type StatusVariant = 'pending' | 'rejected' | 'approved' | 'reset';
 
 const STATUS_ALERTS: Record<
   StatusVariant,
-  { variant: 'warning' | 'destructive' | 'success'; title: string; body: string }
+  { variant: 'warning' | 'destructive' | 'success'; titleKey: string; bodyKey: string }
 > = {
   pending: {
     variant: 'warning',
-    title: 'Your account is awaiting admin approval.',
-    body: "We'll email you when an admin reviews it.",
+    titleKey: 'auth.statusPendingTitle',
+    bodyKey: 'auth.statusPendingBody',
   },
   rejected: {
     variant: 'destructive',
-    title: 'Your account request was not approved.',
-    body: 'Please contact your administrator.',
+    titleKey: 'auth.statusRejectedTitle',
+    bodyKey: 'auth.statusRejectedBody',
   },
   approved: {
     variant: 'success',
-    title: 'Your account has been approved.',
-    body: 'Sign in below to continue.',
+    titleKey: 'auth.statusApprovedTitle',
+    bodyKey: 'auth.statusApprovedBody',
   },
   reset: {
     variant: 'success',
-    title: 'Password reset successfully.',
-    body: 'Sign in with your new password.',
+    titleKey: 'auth.statusResetTitle',
+    bodyKey: 'auth.statusResetBody',
   },
 };
 
@@ -41,6 +42,7 @@ const parseStatus = (raw: string | null): StatusVariant | undefined => {
 };
 
 export default function Login() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const search = useSearch();
   const status = parseStatus(new URLSearchParams(search).get('status'));
@@ -53,11 +55,11 @@ export default function Login() {
   const login = useAuthStore((s) => s.login);
 
   const alert = status ? (
-    <Alert variant={STATUS_ALERTS[status].variant} title={STATUS_ALERTS[status].title}>
-      {STATUS_ALERTS[status].body}
+    <Alert variant={STATUS_ALERTS[status].variant} title={t(STATUS_ALERTS[status].titleKey)}>
+      {t(STATUS_ALERTS[status].bodyKey)}
     </Alert>
   ) : error ? (
-    <Alert variant="destructive" title="Sign-in failed">
+    <Alert variant="destructive" title={t('auth.signinFailed')}>
       {error}
     </Alert>
   ) : undefined;
@@ -68,10 +70,10 @@ export default function Login() {
     setSubmitting(true);
     try {
       await login(email, password);
-      toast.show({ variant: 'success', title: `Welcome back.` });
+      toast.show({ variant: 'success', title: t('auth.welcomeBack') });
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid email or password');
+      setError(err instanceof Error ? err.message : t('auth.invalidCredentials'));
     } finally {
       setSubmitting(false);
     }
@@ -80,17 +82,17 @@ export default function Login() {
   return (
     <AuthShell alert={alert}>
       <div className="tw-h2" style={{ marginBottom: 6 }}>
-        Welcome back.
+        {t('auth.welcomeBack')}
       </div>
       <div className="tw-small" style={{ color: 'var(--text-2)', marginBottom: 24 }}>
-        Sign in to continue your work.
+        {t('auth.signInSubtitle')}
       </div>
 
       <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Input
-          label="Email"
+          label={t('auth.email')}
           type="email"
-          placeholder="you@translation.org"
+          placeholder={t('auth.emailPlaceholder')}
           leadingIcon="mail"
           autoComplete="email"
           value={email}
@@ -107,17 +109,17 @@ export default function Login() {
               marginBottom: 8,
             }}
           >
-            <label style={{ fontSize: 13, fontWeight: 500 }}>Password</label>
+            <label style={{ fontSize: 13, fontWeight: 500 }}>{t('auth.password')}</label>
             <Link
               href="/forgot-password"
               style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 500 }}
             >
-              Forgot?
+              {t('auth.forgot')}
             </Link>
           </div>
           <Input
             type={showPw ? 'text' : 'password'}
-            placeholder="••••••••"
+            placeholder={t('auth.passwordPlaceholder')}
             leadingIcon="lock"
             trailingIcon="x"
             onTrailingClick={() => setShowPw((v) => !v)}
@@ -137,10 +139,10 @@ export default function Login() {
           disabled={submitting}
           style={{ marginTop: 8 }}
         >
-          {submitting ? 'Signing in…' : 'Sign in'}
+          {submitting ? t('auth.signingIn') : t('auth.signIn')}
         </Button>
 
-        <Divider label="new here?" />
+        <Divider label={t('auth.newHere')} />
 
         <Button
           type="button"
@@ -150,7 +152,7 @@ export default function Login() {
           trailingIcon="arrow-right"
           onClick={() => navigate('/signup')}
         >
-          Create an account
+          {t('auth.createAccount')}
         </Button>
       </form>
     </AuthShell>
