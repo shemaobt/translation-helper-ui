@@ -24,11 +24,11 @@ export function Alert({ variant = 'info', title, children, style }: AlertProps) 
       style={{
         background: v.bg,
         border: `1px solid color-mix(in oklab, ${v.fg} 24%, transparent)`,
-        borderRadius: 14,
-        padding: '12px 14px',
+        borderRadius: 16,
+        padding: '14px 16px',
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 11,
+        gap: 12,
         ...style,
       }}
     >
@@ -36,20 +36,34 @@ export function Alert({ variant = 'info', title, children, style }: AlertProps) 
         style={{
           flex: '0 0 auto',
           marginTop: 1,
-          width: 18,
-          height: 18,
+          width: 22,
+          height: 22,
           borderRadius: 999,
-          background: v.fg,
-          color: 'var(--surface)',
+          background: `color-mix(in oklab, ${v.fg} 18%, transparent)`,
+          color: v.fg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          border: `1px solid color-mix(in oklab, ${v.fg} 28%, transparent)`,
         }}
       >
-        <Icon name={v.icon} size={11} strokeWidth={2.5} />
+        <Icon name={v.icon} size={12} strokeWidth={2} />
       </div>
       <div style={{ flex: 1, fontSize: 13, lineHeight: 1.5 }}>
-        {title && <div style={{ fontWeight: 500, marginBottom: children ? 2 : 0 }}>{title}</div>}
+        {title && (
+          <div
+            style={{
+              fontFamily: 'Fraunces, serif',
+              fontSize: 15,
+              fontWeight: 500,
+              color: 'var(--text)',
+              marginBottom: children ? 3 : 0,
+              fontVariationSettings: '"opsz" 144, "SOFT" 50',
+            }}
+          >
+            {title}
+          </div>
+        )}
         {children && <div style={{ color: 'var(--text-2)' }}>{children}</div>}
       </div>
     </div>

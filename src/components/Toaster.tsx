@@ -13,12 +13,12 @@ export function Toaster() {
         right: 24,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 14,
         zIndex: 100,
         pointerEvents: 'none',
       }}
     >
-      {toasts.map((t) => (
+      {toasts.slice(0, 4).map((t) => (
         <div key={t.id} style={{ pointerEvents: 'auto' }}>
           <Toast variant={t.variant} title={t.title} body={t.body} />
         </div>
