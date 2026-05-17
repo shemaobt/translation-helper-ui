@@ -73,19 +73,11 @@ export function ChatTopBar({ title, agent }: ChatTopBarProps) {
           <Icon name={a.icon as never} size={11} /> {agentName}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <IconButton
-          icon="volume-2"
-          aria-label={t('chat.readAloud')}
-          onClick={() => toast.show({ title: t('common.comingSoon', { label: t('chat.readAloud') }) })}
-        />
-        {!isMobile && <NotifPill />}
-        <IconButton
-          icon="more-horizontal"
-          aria-label={t('chat.regenerate')}
-          onClick={() => toast.show({ title: t('common.comingSoon', { label: 'Menu' }) })}
-        />
-      </div>
+      {!isMobile && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <NotifPill />
+        </div>
+      )}
     </div>
   );
 }

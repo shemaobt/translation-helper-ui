@@ -113,6 +113,17 @@
     "viewAll": "Ver todo",
     "discoverComingSoon": "Descubrir — próximamente"
   },
+  "authHero": {
+    "line1": "Descubre.",
+    "line2": "Traduce.",
+    "line3": "Habla.",
+    "subtitle": "Herramientas de IA para traductores que trabajan con lenguas orales.",
+    "pillStoryteller": "Narrador",
+    "pillConversation": "Conversación",
+    "pillOral": "Oral",
+    "pillHealth": "Salud del proyecto",
+    "byline": "por Shemá · JuCUM Brasil"
+  },
   "chat": {
     "newThread": "Nueva conversación",
     "untitledThread": "Conversación sin título",

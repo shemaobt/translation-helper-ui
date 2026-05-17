@@ -113,6 +113,17 @@
     "viewAll": "Voir tout",
     "discoverComingSoon": "Découvrir — bientôt disponible"
   },
+  "authHero": {
+    "line1": "Découvrez.",
+    "line2": "Traduisez.",
+    "line3": "Parlez.",
+    "subtitle": "Des outils d'IA pour les traducteurs travaillant en langues orales.",
+    "pillStoryteller": "Conteur",
+    "pillConversation": "Conversation",
+    "pillOral": "Oral",
+    "pillHealth": "Santé du projet",
+    "byline": "par Shemá · JEM Brésil"
+  },
   "chat": {
     "newThread": "Nouvelle conversation",
     "untitledThread": "Conversation sans titre",
