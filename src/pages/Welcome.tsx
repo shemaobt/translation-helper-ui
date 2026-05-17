@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { InspirationCard, MainInput } from '../components/chat';
 import { Icon } from '../components/Icon';
@@ -63,6 +64,7 @@ export default function Welcome() {
 }
 
 function Hero({ isMobile }: { isMobile: boolean }) {
+  const { t } = useTranslation();
   return (
     <div style={{ paddingRight: isMobile ? 0 : 100 }}>
       <h1
@@ -72,13 +74,13 @@ function Hero({ isMobile }: { isMobile: boolean }) {
           fontSize: isMobile ? 'clamp(32px, 9vw, 44px)' : undefined,
         }}
       >
-        Hello, I am{' '}
+        {t('welcome.heroHello')}{' '}
         <span className="tw-brand-wordmark" style={{ fontSize: 'inherit', fontStyle: 'italic' }}>
-          Translation Helper
+          {t('welcome.heroBrand')}
         </span>
         <br />
         <span style={{ color: 'var(--text-2)', fontStyle: 'italic' }}>
-          Where would you like to start?
+          {t('welcome.heroPrompt')}
         </span>
       </h1>
       <div
@@ -90,7 +92,7 @@ function Hero({ isMobile }: { isMobile: boolean }) {
           maxWidth: 540,
         }}
       >
-        More than just an assistant — a calm, patient companion for the work of translation.
+        {t('welcome.heroSubtitle')}
       </div>
     </div>
   );
@@ -102,6 +104,7 @@ interface InspirationSectionProps {
 }
 
 function InspirationSection({ onSelect, isMobile }: InspirationSectionProps) {
+  const { t } = useTranslation();
   const toast = useToast();
   return (
     <div style={{ marginTop: isMobile ? 32 : 48 }}>
@@ -114,10 +117,10 @@ function InspirationSection({ onSelect, isMobile }: InspirationSectionProps) {
         }}
       >
         <h2 className="tw-h3-serif" style={{ fontSize: isMobile ? 20 : 22 }}>
-          Here's some inspiration for you
+          {t('welcome.inspirationTitle')}
         </h2>
         <button
-          onClick={() => toast.show({ title: 'Discover — coming soon' })}
+          onClick={() => toast.show({ title: t('welcome.discoverComingSoon') })}
           className="tw-small"
           style={{
             color: 'var(--text-2)',
@@ -130,7 +133,7 @@ function InspirationSection({ onSelect, isMobile }: InspirationSectionProps) {
             padding: 0,
           }}
         >
-          View all <Icon name="arrow-right" size={12} />
+          {t('welcome.viewAll')} <Icon name="arrow-right" size={12} />
         </button>
       </div>
       <div

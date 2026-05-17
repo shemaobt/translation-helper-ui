@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Agent } from '../../lib/agents';
 import { Icon } from '../Icon';
 import { AgentIconBadge } from './AgentIconBadge';
@@ -8,6 +9,7 @@ interface ChatEmptyStateProps {
 }
 
 export function ChatEmptyState({ agent, onPickStarter }: ChatEmptyStateProps) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -24,7 +26,7 @@ export function ChatEmptyState({ agent, onPickStarter }: ChatEmptyStateProps) {
     >
       <AgentIconBadge agent={agent} size={72} iconSize={28} />
       <h2 className="tw-h1" style={{ marginTop: 22, fontSize: 36 }}>
-        {agent.name}
+        {t(`agents.${agent.id}.name`)}
       </h2>
       <div
         className="tw-body"
@@ -36,7 +38,7 @@ export function ChatEmptyState({ agent, onPickStarter }: ChatEmptyStateProps) {
           fontSize: 15,
         }}
       >
-        {agent.description}
+        {t(`agents.${agent.id}.description`)}
       </div>
       <div
         style={{
@@ -49,7 +51,7 @@ export function ChatEmptyState({ agent, onPickStarter }: ChatEmptyStateProps) {
         }}
       >
         <div className="tw-eyebrow" style={{ paddingLeft: 6, marginBottom: 4 }}>
-          Try one of these
+          {t('welcome.inspirationTitle')}
         </div>
         {agent.starters.map((p) => (
           <button

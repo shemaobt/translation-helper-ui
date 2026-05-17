@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Agent } from '../../lib/agents';
 import { Icon } from '../Icon';
 
@@ -7,6 +8,7 @@ interface InspirationCardProps {
 }
 
 export function InspirationCard({ agent, onSelect }: InspirationCardProps) {
+  const { t } = useTranslation();
   return (
     <div
       onClick={onSelect}
@@ -37,10 +39,10 @@ export function InspirationCard({ agent, onSelect }: InspirationCardProps) {
         }}
       >
         <div className="tw-h4" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)' }}>
-          {agent.name}
+          {t(`agents.${agent.id}.name`)}
         </div>
         <div className="tw-small" style={{ color: 'var(--text-2)', lineHeight: 1.5 }}>
-          {agent.short}.
+          {t(`agents.${agent.id}.short`)}.
         </div>
       </div>
       <div

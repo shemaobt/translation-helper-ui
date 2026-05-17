@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { AGENT_BY_ID, type Agent, type AgentId } from '../agents';
 import { chatsApi } from '../api';
@@ -33,13 +34,16 @@ interface UseChatOptions {
 }
 
 export function useChat(chatId?: string, opts: UseChatOptions = {}) {
+  const { t } = useTranslation();
   const fresh = isNewThread(chatId);
   const [, navigate] = useLocation();
   const [agentId, setAgentId] = useState<AgentId>(opts.initialAgentId ?? 'storyteller');
   const [messages, setMessages] = useState<ChatMessageSeed[]>([]);
   const [draft, setDraft] = useState('');
   const [inputState, setInputState] = useState<InputState>('idle');
-  const [chatTitle, setChatTitle] = useState<string>(fresh ? 'New thread' : 'Loading…');
+  const [chatTitle, setChatTitle] = useState<string>(
+    fresh ? t('chat.newThread') : t('common.loading'),
+  );
   const [error, setError] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const loadedFor = useRef<string | null>(null);
@@ -73,7 +77,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
   useEffect(() => {
     if (fresh) {
       setMessages([]);
-      setChatTitle('New thread');
+      setChatTitle(t('chat.newThread'));
       loadedFor.current = null;
       return;
     }
@@ -86,18 +90,18 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         if (cancelled) return;
         setAgentId(detail.agent_id);
         setMessages(detail.messages.map(toSeed));
-        setChatTitle(detail.title ?? 'Untitled thread');
+        setChatTitle(detail.title ?? t('chat.untitledThread'));
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : 'Failed to load chat');
+        setError(e instanceof Error ? e.message : t('chat.failedToLoadChat'));
         setMessages([]);
-        setChatTitle('Could not load this chat');
+        setChatTitle(t('chat.couldNotLoadTitle'));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [chatId, fresh]);
+  }, [chatId, fresh, t]);
 
   const send = useCallback(
     async (text: string) => {
@@ -106,7 +110,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       if (isStreaming) return;
       const token = useAuthStore.getState().tokens?.access;
       if (!token) {
-        setError('Not authenticated');
+        setError(t('chat.notAuthenticated'));
         return;
       }
       setError(null);
@@ -131,7 +135,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       const assistantMsgId = `a-${now}`;
       setMessages((prev) => [
         ...prev,
-        { id: userMsgId, role: 'user', content: body, copyText: body, time: 'just now' },
+        { id: userMsgId, role: 'user', content: body, copyText: body, time: t('chat.justNow') },
         {
           id: assistantMsgId,
           role: 'assistant',
@@ -184,11 +188,11 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         if (aborted) {
           return;
         }
-        const errorMarker = '\n\n⚠️ Stream interrupted.';
+        const errorMarker = t('chat.streamInterrupted');
         const finalContent = collected
           ? `${collected}${errorMarker}`
-          : 'Sorry, there was an error.';
-        setError(e instanceof Error ? e.message : 'Streaming failed');
+          : t('chat.sorryError');
+        setError(e instanceof Error ? e.message : t('chat.streamingFailed'));
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMsgId
@@ -211,7 +215,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         setIsStreaming(false);
       }
     },
-    [agentId, chatId, isStreaming, navigate],
+    [agentId, chatId, isStreaming, navigate, t],
   );
 
   const toggleMic = useCallback(() => {
