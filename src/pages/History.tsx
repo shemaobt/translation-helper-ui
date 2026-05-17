@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { AgentIconBadge } from '../components/chat';
-import { Alert, Input } from '../components/primitives';
+import { Alert, Input, Spinner } from '../components/primitives';
 import { AppShell, MobileHeader, TopBar } from '../components/shells';
 import { AGENT_BY_ID } from '../lib/agents';
 import type { ChatSummary } from '../lib/api/types';
@@ -85,7 +85,16 @@ export default function History() {
 
           <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 28 }}>
             {loading ? (
-              <div className="tw-small" style={{ color: 'var(--text-3)' }}>
+              <div
+                className="tw-small"
+                style={{
+                  color: 'var(--text-3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                }}
+              >
+                <Spinner size="sm" tone="muted" />
                 {t('history.loadingConversations')}
               </div>
             ) : buckets.length === 0 ? (

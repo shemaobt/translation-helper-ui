@@ -8,6 +8,7 @@ export { Input } from './Input';
 export { NotifPill } from './NotifPill';
 export { Pill, type PillVariant } from './Pill';
 export { Select } from './Select';
+export { Spinner } from './Spinner';
 export { Streaming } from './Streaming';
 export { Textarea } from './Textarea';
 export { Toast, type ToastVariant } from './Toast';

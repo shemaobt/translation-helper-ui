@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { AdminHeader, AgentPromptRow } from '../components/admin';
-import { Alert } from '../components/primitives';
+import { Alert, Spinner } from '../components/primitives';
 import { AppShell, MobileHeader } from '../components/shells';
 import { AGENTS } from '../lib/agents';
 import { useAgentPrompts } from '../lib/hooks/useAgentPrompts';
@@ -41,7 +41,17 @@ export default function AdminPrompts() {
           </div>
         )}
         {loading ? (
-          <div className="tw-small" style={{ color: 'var(--text-3)', padding: '12px 4px' }}>
+          <div
+            className="tw-small"
+            style={{
+              color: 'var(--text-3)',
+              padding: '12px 4px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <Spinner size="sm" tone="muted" />
             {t('adminPrompts.loadingPrompts')}
           </div>
         ) : (

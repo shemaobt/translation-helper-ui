@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { Icon, type IconName } from '../Icon';
+import { Spinner } from './Spinner';
 
 export type ButtonVariant =
   | 'primary'
@@ -93,7 +94,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       }}
       {...rest}
     >
-      {loading && <Icon name="loader" size={s.ic} />}
+      {loading && <Spinner size={s.ic <= 14 ? 'xs' : 'sm'} tone="inherit" />}
       {!loading && leadingIcon && <Icon name={leadingIcon} size={s.ic} strokeWidth={1.85} />}
       {children}
       {!loading && trailingIcon && <Icon name={trailingIcon} size={s.ic} strokeWidth={1.85} />}
