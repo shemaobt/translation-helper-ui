@@ -35,7 +35,7 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
         try {
           await updateProfile({ locale: selected });
         } catch {
-          // local preference still applies even if server sync fails
+          void 0;
         }
       }
       onClose();

@@ -12,7 +12,7 @@ function syncLocaleFromUser(user: CurrentUser | null): void {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch {
-    // localStorage unavailable; in-memory change still applies
+    void 0;
   }
 }
 
