@@ -85,20 +85,3 @@ export const AGENTS: Agent[] = [
 export const AGENT_BY_ID: Record<AgentId, Agent> = Object.fromEntries(
   AGENTS.map((a) => [a.id, a]),
 ) as Record<AgentId, Agent>;
-
-export type RoleOptionKey =
-  | 'mothertongue'
-  | 'facilitator'
-  | 'advisor'
-  | 'consultant'
-  | 'administrator'
-  | 'other';
-
-export const ROLE_OPTION_KEYS: RoleOptionKey[] = [
-  'mothertongue',
-  'facilitator',
-  'advisor',
-  'consultant',
-  'administrator',
-  'other',
-];
