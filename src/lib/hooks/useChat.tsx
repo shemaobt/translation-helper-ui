@@ -44,19 +44,30 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
   const [isStreaming, setIsStreaming] = useState(false);
   const loadedFor = useRef<string | null>(null);
   const streamAbortRef = useRef<AbortController | null>(null);
+  // chatId the in-flight stream is targeting. Lets the chatId-change effect
+  // tell the difference between "user navigated to a different chat (abort
+  // the leftover stream)" and "send() just navigated to its own new chat
+  // (let the stream keep running)".
+  const activeStreamChatId = useRef<string | null>(null);
 
+  // Unmount-only abort. Covers the user leaving /chat/* entirely.
   useEffect(() => {
     return () => {
       streamAbortRef.current?.abort();
       streamAbortRef.current = null;
+      activeStreamChatId.current = null;
     };
   }, []);
 
+  // Cross-chat abort. If chatId changes and the in-flight stream is for a
+  // different chat, abort it so its chunks don't bleed into the new chat's view.
   useEffect(() => {
-    return () => {
+    const active = activeStreamChatId.current;
+    if (active && chatId && active !== chatId) {
       streamAbortRef.current?.abort();
       streamAbortRef.current = null;
-    };
+      activeStreamChatId.current = null;
+    }
   }, [chatId]);
 
   useEffect(() => {
@@ -105,9 +116,14 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
         const created = await chatsApi.createChat(agentId);
         targetChatId = created.id;
         loadedFor.current = created.id;
+        // Mark our stream's target BEFORE navigate so the chatId-change
+        // effect can see this is our own navigation and skip the abort.
+        activeStreamChatId.current = created.id;
         navigate(`/chat/${created.id}`, { replace: true });
         // Fire-and-forget: surface the new chat in Sidebar + /history immediately.
         void useChatHistoryStore.getState().refresh();
+      } else {
+        activeStreamChatId.current = targetChatId;
       }
 
       const now = Date.now();
@@ -188,6 +204,9 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
       } finally {
         if (streamAbortRef.current === controller) {
           streamAbortRef.current = null;
+        }
+        if (activeStreamChatId.current === targetChatId) {
+          activeStreamChatId.current = null;
         }
         setIsStreaming(false);
       }

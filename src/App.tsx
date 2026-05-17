@@ -29,11 +29,9 @@ export default function App() {
             </ProtectedRoute>
           </Route>
           <Route path="/chat/:chatId?">
-            {(params) => (
-              <ProtectedRoute>
-                <Chat key={params.chatId ?? 'new'} />
-              </ProtectedRoute>
-            )}
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
           </Route>
           <Route path="/profile">
             <ProtectedRoute>
