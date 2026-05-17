@@ -1,7 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import i18n, { LOCALE_STORAGE_KEY, isSupportedLocale } from '../../i18n';
 import { authApi, configureApiAuth, type CurrentUser } from '../api';
 import { useChatHistoryStore } from './chatHistoryStore';
+
+function syncLocaleFromUser(user: CurrentUser | null): void {
+  const locale = user?.locale;
+  if (!locale || !isSupportedLocale(locale)) return;
+  if (i18n.language === locale) return;
+  void i18n.changeLanguage(locale);
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // localStorage unavailable; in-memory change still applies
+  }
+}
 
 interface Tokens {
   access: string;
@@ -52,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
             loaded: true,
             loading: false,
           });
+          syncLocaleFromUser(res.user);
           await get().refreshMyRoles();
         } catch (e) {
           set({ loading: false, error: e instanceof Error ? e.message : 'Login failed' });
@@ -98,6 +112,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const user = await authApi.me();
           set({ user, loaded: true });
+          syncLocaleFromUser(user);
         } catch {
           set({ user: null, tokens: null, appRoles: [], loaded: true });
         }
@@ -123,6 +138,7 @@ export const useAuthStore = create<AuthState>()(
       updateProfile: async (payload) => {
         const user = await authApi.updateProfile(payload);
         set({ user });
+        syncLocaleFromUser(user);
       },
     }),
     {
