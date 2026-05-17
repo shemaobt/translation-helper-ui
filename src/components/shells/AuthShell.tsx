@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
-import { Wordmark } from '../primitives';
+import { LanguagePickerDialog } from '../LanguagePickerDialog';
+import { IconButton, Wordmark } from '../primitives';
 import { ThemeRoot } from '../Theme';
 import { ShemaWaveDecor } from './ShemaWaveDecor';
 
@@ -10,7 +12,9 @@ interface AuthShellProps {
 }
 
 export function AuthShell({ alert, children }: AuthShellProps) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const [languageOpen, setLanguageOpen] = useState(false);
   return (
     <ThemeRoot style={{ minHeight: '100vh' }}>
       <div
@@ -37,6 +41,23 @@ export function AuthShell({ alert, children }: AuthShellProps) {
           }}
         >
           <ShemaWaveDecor corner="bottom-right" size={isMobile ? 320 : 480} offset={isMobile ? 80 : 120} />
+
+          <div
+            style={{
+              position: 'absolute',
+              top: isMobile ? 12 : 20,
+              right: isMobile ? 12 : 20,
+              zIndex: 2,
+            }}
+          >
+            <IconButton
+              icon="languages"
+              variant="paper"
+              hoverFill={false}
+              aria-label={t('common.language')}
+              onClick={() => setLanguageOpen(true)}
+            />
+          </div>
 
           <div
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, zIndex: 1 }}
@@ -81,6 +102,7 @@ export function AuthShell({ alert, children }: AuthShellProps) {
           </div>
         </div>
       </div>
+      <LanguagePickerDialog open={languageOpen} onClose={() => setLanguageOpen(false)} />
     </ThemeRoot>
   );
 }
