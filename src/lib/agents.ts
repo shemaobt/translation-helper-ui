@@ -85,3 +85,5 @@ export const AGENTS: Agent[] = [
 export const AGENT_BY_ID: Record<AgentId, Agent> = Object.fromEntries(
   AGENTS.map((a) => [a.id, a]),
 ) as Record<AgentId, Agent>;
+
+export const AGENT_IDS: AgentId[] = AGENTS.map((a) => a.id);
