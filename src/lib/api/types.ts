@@ -47,9 +47,6 @@ export interface AgentInfo {
   id: AgentId;
   name: string;
   description: string;
-  short: string;
-  icon: string;
-  starters: string[];
   prompt_version: number | null;
 }
 
@@ -91,7 +88,6 @@ export interface AgentPrompt {
 
 export interface TranscribeResponse {
   text: string;
-  duration_sec: number | null;
 }
 
 export interface SpeakResponse {
