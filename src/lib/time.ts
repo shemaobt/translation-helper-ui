@@ -29,23 +29,44 @@ export function groupByBucket<T extends { lastMessageAt: Date }>(items: T[]): Bu
   }
 
   return [
-    { label: 'Today', items: today },
-    { label: 'Yesterday', items: yesterday },
-    { label: 'Previous 7 days', items: week },
-    { label: 'Previous 30 days', items: month },
-    { label: 'Older', items: older },
+    { label: 'today', items: today },
+    { label: 'yesterday', items: yesterday },
+    { label: 'earlierThisWeek', items: week },
+    { label: 'lastWeek', items: month },
+    { label: 'earlier', items: older },
   ].filter((b) => b.items.length > 0);
 }
 
-const relTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-const monthDay = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
+const relTimeCache = new Map<string, Intl.RelativeTimeFormat>();
+const monthDayCache = new Map<string, Intl.DateTimeFormat>();
 
-export function formatRelative(date: Date, ref: Date = new Date()): string {
+function relTimeFor(locale?: string): Intl.RelativeTimeFormat {
+  const key = locale ?? 'default';
+  let fmt = relTimeCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    relTimeCache.set(key, fmt);
+  }
+  return fmt;
+}
+
+function monthDayFor(locale?: string): Intl.DateTimeFormat {
+  const key = locale ?? 'default';
+  let fmt = monthDayCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' });
+    monthDayCache.set(key, fmt);
+  }
+  return fmt;
+}
+
+export function formatRelative(date: Date, ref: Date = new Date(), locale?: string): string {
   const diffMs = date.getTime() - ref.getTime();
   const abs = Math.abs(diffMs);
+  const relTime = relTimeFor(locale);
   if (abs < 60_000) return relTime.format(Math.round(diffMs / 1000), 'second');
   if (abs < 3_600_000) return relTime.format(Math.round(diffMs / 60_000), 'minute');
   if (abs < DAY_MS) return relTime.format(Math.round(diffMs / 3_600_000), 'hour');
   if (abs < 7 * DAY_MS) return relTime.format(Math.round(diffMs / DAY_MS), 'day');
-  return monthDay.format(date);
+  return monthDayFor(locale).format(date);
 }
