@@ -90,9 +90,15 @@ export interface TranscribeResponse {
   text: string;
 }
 
+export interface Timepoint {
+  mark: string;
+  time_sec: number;
+}
+
 export interface SpeakResponse {
   audio_base64: string;
   mime_type: string;
   etag: string;
   cached: boolean;
+  timepoints: Timepoint[];
 }
