@@ -15,7 +15,7 @@ export function Wordmark({ size = 22 }: WordmarkProps) {
           color: 'var(--accent)',
         }}
       >
-        Translation<span style={{ color: 'var(--text)' }}>.</span>Helper
+        Translation Helper
       </div>
     </div>
   );
