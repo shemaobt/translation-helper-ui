@@ -99,6 +99,7 @@
     "signupFailed": "Error al registrarse",
     "signinFailed": "Error al iniciar sesión",
     "couldNotCreate": "No se pudo crear la cuenta",
+    "emailAlreadyExists": "Ya existe una cuenta con este correo. Inicia sesión en su lugar.",
     "couldNotSendReset": "No se pudo enviar el enlace de restablecimiento",
     "resetFailed": "Restablecimiento fallido",
     "resetGenericError": "Restablecimiento fallido.",

@@ -99,6 +99,7 @@
     "signupFailed": "Signup failed",
     "signinFailed": "Sign-in failed",
     "couldNotCreate": "Could not create account",
+    "emailAlreadyExists": "An account with this email already exists. Sign in instead.",
     "couldNotSendReset": "Could not send reset link",
     "resetFailed": "Reset failed",
     "resetGenericError": "Reset failed.",

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'wouter';
@@ -68,7 +69,11 @@ export default function Signup() {
         navigate('/login');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('auth.couldNotCreate'));
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setError(t('auth.emailAlreadyExists'));
+      } else {
+        setError(err instanceof Error ? err.message : t('auth.couldNotCreate'));
+      }
     } finally {
       setSubmitting(false);
     }
