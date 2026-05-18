@@ -68,6 +68,25 @@ export const useAuthStore = create<AuthState>()(
           });
           syncLocaleFromUser(res.user);
           await get().refreshMyRoles();
+
+          // If the user already has an account on the platform (e.g. they
+          // signed up via meaning-map first) but no role for translation-helper,
+          // auto-queue an access request so an admin actually sees them — or,
+          // when the app has auto_approve on, get the role granted in-place
+          // so login lands them in the app instead of /pending-approval.
+          const state = get();
+          if (
+            state.user &&
+            !state.user.is_platform_admin &&
+            state.appRoles.length === 0
+          ) {
+            try {
+              await authApi.requestAccess(TH_APP_KEY);
+              await get().refreshMyRoles();
+            } catch (err) {
+              console.warn(`${TH_APP_KEY} access request auto-queue failed:`, err);
+            }
+          }
         } catch (e) {
           set({ loading: false, error: e instanceof Error ? e.message : 'Login failed' });
           throw e;
