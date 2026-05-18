@@ -104,6 +104,14 @@
     "resetGenericError": "Restablecimiento fallido.",
     "invalidCredentials": "Correo o contraseña inválidos"
   },
+  "pendingApproval": {
+    "alertTitle": "Tu acceso está pendiente de aprobación del administrador",
+    "alertBody": "Un administrador revisará tu solicitud y te enviará un correo cuando esté aprobada.",
+    "heading": "Ya casi.",
+    "subheading": "Tu cuenta está creada — solo falta que un administrador habilite Translation Helper para ti.",
+    "body": "Hemos registrado una solicitud de acceso para {{email}}. En cuanto un administrador la apruebe, recarga esta página (o cierra sesión y vuelve a entrar) y entrarás directamente a la aplicación.",
+    "checkAgain": "Revisar estado"
+  },
   "welcome": {
     "heroHello": "Hola, soy",
     "heroBrand": "Translation Helper",

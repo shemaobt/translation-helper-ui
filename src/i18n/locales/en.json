@@ -104,6 +104,14 @@
     "resetGenericError": "Reset failed.",
     "invalidCredentials": "Invalid email or password"
   },
+  "pendingApproval": {
+    "alertTitle": "Your access is awaiting admin approval",
+    "alertBody": "An admin will review your request and email you once it's approved.",
+    "heading": "Almost there.",
+    "subheading": "Your account is created — you just need an admin to unlock Translation Helper for you.",
+    "body": "We've queued an access request for {{email}}. As soon as an admin approves it, refresh this page (or sign out and back in) and you'll land in the app.",
+    "checkAgain": "Check approval status"
+  },
   "welcome": {
     "heroHello": "Hello, I am",
     "heroBrand": "Translation Helper",

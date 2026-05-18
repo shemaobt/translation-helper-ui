@@ -104,6 +104,14 @@
     "resetGenericError": "Falha na redefinição.",
     "invalidCredentials": "E-mail ou senha inválidos"
   },
+  "pendingApproval": {
+    "alertTitle": "Seu acesso aguarda aprovação do administrador",
+    "alertBody": "Um administrador analisará seu pedido e enviará um e-mail assim que for aprovado.",
+    "heading": "Quase lá.",
+    "subheading": "Sua conta foi criada — só falta um administrador liberar o Translation Helper para você.",
+    "body": "Registramos um pedido de acesso para {{email}}. Assim que um administrador aprovar, atualize esta página (ou saia e entre novamente) que você cairá direto no app.",
+    "checkAgain": "Verificar aprovação"
+  },
   "welcome": {
     "heroHello": "Olá, eu sou o",
     "heroBrand": "Translation Helper",

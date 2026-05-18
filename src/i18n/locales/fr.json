@@ -104,6 +104,14 @@
     "resetGenericError": "Échec de la réinitialisation.",
     "invalidCredentials": "E-mail ou mot de passe invalide"
   },
+  "pendingApproval": {
+    "alertTitle": "Votre accès est en attente d'approbation par un administrateur",
+    "alertBody": "Un administrateur examinera votre demande et vous enverra un e-mail dès qu'elle sera approuvée.",
+    "heading": "Presque prêt.",
+    "subheading": "Votre compte est créé — il ne reste plus qu'à un administrateur d'activer Translation Helper pour vous.",
+    "body": "Nous avons enregistré une demande d'accès pour {{email}}. Dès qu'un administrateur l'aura approuvée, actualisez cette page (ou déconnectez-vous puis reconnectez-vous) et vous accéderez directement à l'application.",
+    "checkAgain": "Vérifier le statut"
+  },
   "welcome": {
     "heroHello": "Bonjour, je suis",
     "heroBrand": "Translation Helper",

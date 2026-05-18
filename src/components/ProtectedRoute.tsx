@@ -9,10 +9,15 @@ import { ThemeRoot } from './Theme';
 interface Props {
   children: ReactNode;
   requirePlatformAdmin?: boolean;
+  requireAppRole?: boolean;
 }
 
-export default function ProtectedRoute({ children, requirePlatformAdmin }: Props) {
-  const { user, tokens, loaded, refreshMe } = useAuthStore();
+export default function ProtectedRoute({
+  children,
+  requirePlatformAdmin,
+  requireAppRole = true,
+}: Props) {
+  const { user, tokens, loaded, appRoles, refreshMe } = useAuthStore();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -47,6 +52,10 @@ export default function ProtectedRoute({ children, requirePlatformAdmin }: Props
 
   if (requirePlatformAdmin && !user.is_platform_admin) {
     return <Redirect to="/" />;
+  }
+
+  if (requireAppRole && !user.is_platform_admin && appRoles.length === 0) {
+    return <Redirect to="/pending-approval" />;
   }
 
   return <>{children}</>;
