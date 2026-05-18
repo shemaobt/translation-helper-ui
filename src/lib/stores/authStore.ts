@@ -87,6 +87,11 @@ export const useAuthStore = create<AuthState>()(
           let accessRequested = true;
           try {
             await authApi.requestAccess(TH_APP_KEY);
+            // If the app has auto_approve on, the server grants the role
+            // synchronously — pull the new role into the store so the
+            // redirect after signup lands the user in the app, not on
+            // /pending-approval.
+            await get().refreshMyRoles();
           } catch (err) {
             accessRequested = false;
             console.warn(`${TH_APP_KEY} access request failed:`, err);
@@ -165,5 +170,23 @@ export async function bootstrapAuth(): Promise<void> {
     }
   } else {
     useAuthStore.setState({ loaded: true });
+  }
+
+  // When an admin approves a pending user, they need their role to appear
+  // without a hard reload. Refresh on focus is cheap and handles tab-back.
+  if (typeof window !== 'undefined' && !window.__thAuthFocusListenerInstalled) {
+    window.__thAuthFocusListenerInstalled = true;
+    window.addEventListener('focus', () => {
+      const state = useAuthStore.getState();
+      if (state.loaded && state.tokens?.access && state.user) {
+        void state.refreshMyRoles();
+      }
+    });
+  }
+}
+
+declare global {
+  interface Window {
+    __thAuthFocusListenerInstalled?: boolean;
   }
 }
