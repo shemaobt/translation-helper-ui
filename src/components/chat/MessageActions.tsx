@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { audioApi } from '../../lib/api';
 import { ttsLanguageCode } from '../../lib/api/audio';
+import type { Timepoint } from '../../lib/api/types';
+import { useKaraokeHighlight } from '../../lib/hooks/useKaraokeHighlight';
 import { useToast } from '../../lib/hooks/useToast';
 import { stripMarkdownForSpeech } from '../../lib/text/stripMarkdownForSpeech';
 import { Icon } from '../Icon';
@@ -9,16 +11,28 @@ import { IconButton, Spinner, Tooltip } from '../primitives';
 
 interface MessageActionsProps {
   copyText?: string;
+  contentRef?: RefObject<HTMLElement | null>;
 }
 
 type PlaybackState = 'idle' | 'loading' | 'playing';
 
-export function MessageActions({ copyText }: MessageActionsProps) {
+export function MessageActions({ copyText, contentRef }: MessageActionsProps) {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const [state, setState] = useState<PlaybackState>('idle');
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
+  const [activeSpoken, setActiveSpoken] = useState('');
+  const [activeTimepoints, setActiveTimepoints] = useState<Timepoint[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+
+  const fallbackRef = useRef<HTMLElement | null>(null);
+  useKaraokeHighlight({
+    containerRef: contentRef ?? fallbackRef,
+    spokenText: activeSpoken,
+    timepoints: activeTimepoints,
+    audio: activeAudio,
+  });
 
   useEffect(
     () => () => {
@@ -52,6 +66,9 @@ export function MessageActions({ copyText }: MessageActionsProps) {
       URL.revokeObjectURL(objectUrlRef.current);
       objectUrlRef.current = null;
     }
+    setActiveAudio(null);
+    setActiveTimepoints([]);
+    setActiveSpoken('');
     setState('idle');
   };
 
@@ -70,8 +87,9 @@ export function MessageActions({ copyText }: MessageActionsProps) {
 
     setState('loading');
     try {
-      const { audio_base64, mime_type } = await audioApi.speak(
-        spoken.slice(0, 4500),
+      const spokenClipped = spoken.slice(0, 4500);
+      const { audio_base64, mime_type, timepoints } = await audioApi.speak(
+        spokenClipped,
         ttsLanguageCode(i18n.language),
       );
       const bin = atob(audio_base64);
@@ -88,6 +106,9 @@ export function MessageActions({ copyText }: MessageActionsProps) {
         teardown();
       };
       await audio.play();
+      setActiveSpoken(spokenClipped);
+      setActiveTimepoints(timepoints ?? []);
+      setActiveAudio(audio);
       setState('playing');
     } catch (e) {
       const message = e instanceof Error ? e.message : t('chat.readAloudFailed');

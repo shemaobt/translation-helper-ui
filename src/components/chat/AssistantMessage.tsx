@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AGENT_BY_ID, type AgentId } from '../../lib/agents';
 import { Icon } from '../Icon';
@@ -23,6 +23,7 @@ export function AssistantMessage({
 }: AssistantMessageProps) {
   const { t } = useTranslation();
   const a = AGENT_BY_ID[agent];
+  const contentRef = useRef<HTMLDivElement>(null);
   return (
     <div style={{ marginTop: 28 }}>
       {firstOfTurn && (
@@ -58,7 +59,7 @@ export function AssistantMessage({
           </span>
         </div>
       )}
-      <div style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--text)' }}>
+      <div ref={contentRef} style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--text)' }}>
         {typeof children === 'string' ? <MarkdownContent text={children} /> : children}
         {streaming && (
           <span style={{ color: 'var(--text-3)' }}>
@@ -66,7 +67,9 @@ export function AssistantMessage({
           </span>
         )}
       </div>
-      {firstOfTurn && !streaming && <MessageActions copyText={copyText} />}
+      {firstOfTurn && !streaming && (
+        <MessageActions copyText={copyText} contentRef={contentRef} />
+      )}
     </div>
   );
 }
