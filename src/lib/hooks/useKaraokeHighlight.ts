@@ -7,7 +7,6 @@ interface UseKaraokeHighlightArgs {
   spokenText: string;
   timepoints: Timepoint[];
   audio: HTMLAudioElement | null;
-  /** Smoothly scroll the active sentence into view when it changes. Default true. */
   autoScroll?: boolean;
 }
 
