@@ -262,6 +262,16 @@
 }
 .tw-listen-pulse { animation: tw-listen-pulse 1600ms ease-in-out infinite; }
 
+/* Karaoke-style sentence highlight while TTS audio plays.
+ * Painted via the CSS Custom Highlight API (CSS.highlights) from
+ * src/lib/hooks/useKaraokeHighlight.ts. Unsupported browsers silently
+ * skip the highlight; audio still plays normally. */
+::highlight(th-spoken) {
+  background-color: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: inherit;
+  border-radius: 3px;
+}
+
 @media (max-width: 767px) {
   body { overscroll-behavior-y: contain; }
 }
