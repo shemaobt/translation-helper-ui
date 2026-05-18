@@ -99,6 +99,7 @@
     "signupFailed": "Falha no cadastro",
     "signinFailed": "Falha ao entrar",
     "couldNotCreate": "Não foi possível criar a conta",
+    "emailAlreadyExists": "Já existe uma conta com este e-mail. Entre em vez disso.",
     "couldNotSendReset": "Não foi possível enviar o link de redefinição",
     "resetFailed": "Falha na redefinição",
     "resetGenericError": "Falha na redefinição.",

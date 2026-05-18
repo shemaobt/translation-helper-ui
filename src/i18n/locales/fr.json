@@ -99,6 +99,7 @@
     "signupFailed": "Échec de l'inscription",
     "signinFailed": "Échec de la connexion",
     "couldNotCreate": "Impossible de créer le compte",
+    "emailAlreadyExists": "Un compte avec cet e-mail existe déjà. Connectez-vous à la place.",
     "couldNotSendReset": "Impossible d'envoyer le lien de réinitialisation",
     "resetFailed": "Échec de la réinitialisation",
     "resetGenericError": "Échec de la réinitialisation.",
