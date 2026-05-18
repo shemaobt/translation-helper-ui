@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
-import { AGENT_BY_ID, type Agent, type AgentId } from '../agents';
+import { AGENT_BY_ID, AGENT_IDS, type Agent, type AgentId } from '../agents';
 import { chatsApi } from '../api';
 import type { ChatMessageDto } from '../api/types';
 import type { ChatMessageSeed } from '../fixtures';
@@ -223,8 +223,7 @@ export function useChat(chatId?: string, opts: UseChatOptions = {}) {
   }, []);
 
   const rotateAgent = useCallback(() => {
-    const ids: AgentId[] = ['storyteller', 'conversation', 'oral', 'health', 'backtrans'];
-    setAgentId((cur) => ids[(ids.indexOf(cur) + 1) % ids.length]);
+    setAgentId((cur) => AGENT_IDS[(AGENT_IDS.indexOf(cur) + 1) % AGENT_IDS.length]);
   }, []);
 
   const agent: Agent = useMemo(() => AGENT_BY_ID[agentId], [agentId]);

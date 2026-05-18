@@ -1,3 +1,4 @@
+import { TH_APP_KEY } from '../constants';
 import { api } from './client';
 import type { CurrentUser } from './types';
 
@@ -40,7 +41,7 @@ export async function updateProfile(payload: {
   return data;
 }
 
-export async function forgotPassword(email: string, appKey = 'translation-helper'): Promise<void> {
+export async function forgotPassword(email: string, appKey: string = TH_APP_KEY): Promise<void> {
   await api.post('/api/auth/forgot-password', { email, app_key: appKey });
 }
 
@@ -49,7 +50,7 @@ export async function resetPassword(token: string, password: string): Promise<vo
 }
 
 export async function requestAccess(
-  appKey = 'translation-helper',
+  appKey: string = TH_APP_KEY,
   note?: string,
 ): Promise<void> {
   await api.post('/api/access-requests', { app_key: appKey, note });

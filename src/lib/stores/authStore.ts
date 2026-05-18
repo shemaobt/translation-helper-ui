@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n, { LOCALE_STORAGE_KEY, isSupportedLocale } from '../../i18n';
 import { authApi, configureApiAuth, type CurrentUser } from '../api';
+import { TH_APP_KEY } from '../constants';
 import { useChatHistoryStore } from './chatHistoryStore';
 
 function syncLocaleFromUser(user: CurrentUser | null): void {
@@ -85,10 +86,10 @@ export const useAuthStore = create<AuthState>()(
           });
           let accessRequested = true;
           try {
-            await authApi.requestAccess('translation-helper');
+            await authApi.requestAccess(TH_APP_KEY);
           } catch (err) {
             accessRequested = false;
-            console.warn('translation-helper access request failed:', err);
+            console.warn(`${TH_APP_KEY} access request failed:`, err);
           }
           return { accessRequested };
         } catch (e) {
@@ -120,7 +121,7 @@ export const useAuthStore = create<AuthState>()(
 
       refreshMyRoles: async () => {
         try {
-          const roles = await authApi.myRoles('translation-helper');
+          const roles = await authApi.myRoles(TH_APP_KEY);
           set({ appRoles: roles.map((r) => r.role_key) });
         } catch {
           set({ appRoles: [] });

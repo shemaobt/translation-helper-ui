@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AGENT_BY_ID, type AgentId } from '../../lib/agents';
 import { Icon } from '../Icon';
 import { Streaming } from '../primitives';
+import { MarkdownContent } from './MarkdownContent';
 import { MessageActions } from './MessageActions';
 
 interface AssistantMessageProps {
@@ -58,7 +59,7 @@ export function AssistantMessage({
         </div>
       )}
       <div style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--text)' }}>
-        {children}
+        {typeof children === 'string' ? <MarkdownContent text={children} /> : children}
         {streaming && (
           <span style={{ color: 'var(--text-3)' }}>
             <Streaming />

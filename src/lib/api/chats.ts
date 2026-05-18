@@ -101,13 +101,14 @@ export async function streamChatMessage(
           // ignore malformed
         }
       } else if (eventName === 'error') {
+        let message = 'Streaming error';
         try {
           const parsed = JSON.parse(dataLine) as { message?: string };
-          throw new Error(parsed.message || 'Streaming error');
-        } catch (e) {
-          if (e instanceof Error) throw e;
-          throw new Error('Streaming error');
+          if (parsed.message) message = parsed.message;
+        } catch {
+          // Malformed error payload — fall back to default message.
         }
+        throw new Error(message);
       } else if (eventName === 'done') {
         return;
       }

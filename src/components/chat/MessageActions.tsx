@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { audioApi } from '../../lib/api';
+import { ttsLanguageCode } from '../../lib/api/audio';
 import { useToast } from '../../lib/hooks/useToast';
 import { stripMarkdownForSpeech } from '../../lib/text/stripMarkdownForSpeech';
 import { Icon } from '../Icon';
@@ -13,7 +14,7 @@ interface MessageActionsProps {
 type PlaybackState = 'idle' | 'loading' | 'playing';
 
 export function MessageActions({ copyText }: MessageActionsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const [state, setState] = useState<PlaybackState>('idle');
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -69,7 +70,10 @@ export function MessageActions({ copyText }: MessageActionsProps) {
 
     setState('loading');
     try {
-      const { audio_base64, mime_type } = await audioApi.speak(spoken.slice(0, 4500));
+      const { audio_base64, mime_type } = await audioApi.speak(
+        spoken.slice(0, 4500),
+        ttsLanguageCode(i18n.language),
+      );
       const bin = atob(audio_base64);
       const bytes = new Uint8Array(bin.length);
       for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
