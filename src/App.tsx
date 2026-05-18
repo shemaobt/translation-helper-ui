@@ -9,6 +9,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import History from './pages/History';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
+import PendingApproval from './pages/PendingApproval';
 import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 import Signup from './pages/Signup';
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password" component={ResetPassword} />
+          <Route path="/pending-approval" component={PendingApproval} />
           <Route path="/">
             <ProtectedRoute>
               <Welcome />
@@ -34,12 +36,12 @@ export default function App() {
             </ProtectedRoute>
           </Route>
           <Route path="/profile">
-            <ProtectedRoute>
+            <ProtectedRoute requireAppRole={false}>
               <Profile />
             </ProtectedRoute>
           </Route>
           <Route path="/settings">
-            <ProtectedRoute>
+            <ProtectedRoute requireAppRole={false}>
               <Profile />
             </ProtectedRoute>
           </Route>
