@@ -236,24 +236,10 @@ export function AuthShell({ alert, children }: AuthShellProps) {
           </section>
         </main>
 
-        <footer
-          style={{
-            marginTop: 24,
-            display: 'flex',
-            justifyContent: 'center',
-            color: 'var(--text-4)',
-            fontSize: 12,
-            fontStyle: 'italic',
-            fontFamily: 'Fraunces, serif',
-          }}
-        >
-          {t('authHero.byline')}
-        </footer>
-
-        {/* Shema attribution — keep identical with project-health-ui/src/pages/Login.tsx */}
+        {/* Shema attribution — keep identical with project-health-ui (Login.tsx + Welcome.tsx) */}
         <p
           style={{
-            marginTop: 12,
+            marginTop: 24,
             textAlign: 'center',
             fontSize: 11,
             fontWeight: 500,
