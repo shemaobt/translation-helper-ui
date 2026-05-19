@@ -46,10 +46,13 @@ function userInfoFromAuth(
   authUser: ReturnType<typeof useAuthStore.getState>['user'],
   isAdmin: boolean,
   adminLabel: string,
+  guestLabel: string,
+  defaultPlanLabel: string,
+  fallbackName: string,
 ): { name: string; plan: string } {
-  if (!authUser) return { name: 'Guest', plan: 'Translation Helper' };
-  const name = authUser.display_name || authUser.email.split('@')[0] || 'You';
-  const plan = isAdmin ? adminLabel : 'Translation Helper';
+  if (!authUser) return { name: guestLabel, plan: defaultPlanLabel };
+  const name = authUser.display_name || authUser.email.split('@')[0] || fallbackName;
+  const plan = isAdmin ? adminLabel : defaultPlanLabel;
   return { name, plan };
 }
 
@@ -64,7 +67,15 @@ export function Sidebar({
   const authUser = useAuthStore((s) => s.user);
   const resolvedIsAdmin = isAdmin ?? authUser?.is_platform_admin ?? false;
   const resolvedUser =
-    user ?? userInfoFromAuth(authUser, resolvedIsAdmin, t('profile.platformAdmin'));
+    user ??
+    userInfoFromAuth(
+      authUser,
+      resolvedIsAdmin,
+      t('profile.platformAdmin'),
+      t('sidebar.guest'),
+      t('sidebar.defaultPlan'),
+      t('sidebar.fallbackName'),
+    );
   if (mobile) {
     if (!open) return null;
     return (
