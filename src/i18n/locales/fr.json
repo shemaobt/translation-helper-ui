@@ -288,5 +288,10 @@
     "earlierThisWeek": "Plus tôt cette semaine",
     "lastWeek": "La semaine dernière",
     "earlier": "Plus tôt"
+  },
+  "sidebar": {
+    "guest": "Invité",
+    "defaultPlan": "Translation Helper",
+    "fallbackName": "Vous"
   }
 }
