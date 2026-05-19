@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Agent } from '../../lib/agents';
+import { AGENTS, type Agent, type AgentId } from '../../lib/agents';
 import { audioApi } from '../../lib/api';
+import { useClickOutside } from '../../lib/hooks/useClickOutside';
 import type { InputState } from '../../lib/hooks/useChat';
 import { useIsMobile } from '../../lib/hooks/useIsMobile';
 import { useToast } from '../../lib/hooks/useToast';
 import { useVoiceRecorder } from '../../lib/hooks/useVoiceRecorder';
-import { Icon } from '../Icon';
+import { Icon, type IconName } from '../Icon';
 import { Alert, IconButton } from '../primitives';
 import { VoiceTakeover } from './VoiceTakeover';
 
@@ -29,7 +30,7 @@ interface MainInputProps {
   onMicStateChange?: (state: InputState) => void;
   state: InputState;
   agent?: Agent;
-  onAgentClick?: () => void;
+  onAgentSelect?: (id: AgentId) => void;
   showHint?: boolean;
   /** True while the previous assistant turn is still streaming. Locks the whole input. */
   disabled?: boolean;
@@ -43,7 +44,7 @@ export function MainInput({
   onMicStateChange,
   state,
   agent,
-  onAgentClick,
+  onAgentSelect,
   showHint,
   disabled = false,
 }: MainInputProps) {
@@ -52,6 +53,9 @@ export function MainInput({
   const [focused, setFocused] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [agentPickerOpen, setAgentPickerOpen] = useState(false);
+  const agentPickerRef = useRef<HTMLDivElement>(null);
+  useClickOutside(agentPickerRef, () => setAgentPickerOpen(false), agentPickerOpen);
   const toast = useToast();
   const isMobile = useIsMobile();
 
@@ -246,32 +250,108 @@ export function MainInput({
           />
           <div style={{ flex: 1 }} />
           {agent && (
-            <button
-              onClick={onAgentClick}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '0 12px',
-                height: 32,
-                maxWidth: isMobile ? 140 : 'none',
-                borderRadius: 999,
-                background: 'var(--surface-2)',
-                fontSize: 13,
-                fontWeight: 500,
-                color: 'var(--text)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-              }}
-              title={agent.name}
-            >
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name}</span>
-              <Icon
-                name="chevron-down"
-                size={13}
-                style={{ color: 'var(--text-3)', flex: '0 0 auto' }}
-              />
-            </button>
+            <div ref={agentPickerRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setAgentPickerOpen((o) => !o)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setAgentPickerOpen(false);
+                }}
+                aria-haspopup="listbox"
+                aria-expanded={agentPickerOpen}
+                aria-label={t('chat.changeAssistant', { defaultValue: 'Change assistant' })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '0 12px',
+                  height: 32,
+                  maxWidth: isMobile ? 140 : 'none',
+                  borderRadius: 999,
+                  background: 'var(--surface-2)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--text)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                }}
+                title={agent.name}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name}</span>
+                <Icon
+                  name="chevron-down"
+                  size={13}
+                  style={{ color: 'var(--text-3)', flex: '0 0 auto' }}
+                />
+              </button>
+              {agentPickerOpen && (
+                <div
+                  role="listbox"
+                  style={{
+                    position: 'absolute',
+                    bottom: 'calc(100% + 8px)',
+                    right: 0,
+                    width: isMobile ? 260 : 320,
+                    maxWidth: 'calc(100vw - 24px)',
+                    background: 'var(--paper)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 14,
+                    boxShadow: 'var(--shadow-md)',
+                    padding: 6,
+                    zIndex: 20,
+                  }}
+                >
+                  {AGENTS.map((a) => {
+                    const active = a.id === agent.id;
+                    return (
+                      <button
+                        key={a.id}
+                        role="option"
+                        aria-selected={active}
+                        type="button"
+                        onClick={() => {
+                          onAgentSelect?.(a.id);
+                          setAgentPickerOpen(false);
+                        }}
+                        className="tw-hover-surface"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 10,
+                          padding: '8px 10px',
+                          borderRadius: 10,
+                          width: '100%',
+                          textAlign: 'left',
+                          background: active ? 'var(--surface-2)' : 'transparent',
+                          color: 'var(--text)',
+                          border: 0,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Icon
+                          name={a.icon as IconName}
+                          size={16}
+                          style={{ color: 'var(--text-3)', marginTop: 2, flex: '0 0 auto' }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 500 }}>{a.name}</div>
+                          <div className="tw-micro" style={{ color: 'var(--text-3)', marginTop: 2 }}>
+                            {a.short}
+                          </div>
+                        </div>
+                        {active && (
+                          <Icon
+                            name="check"
+                            size={14}
+                            style={{ color: 'var(--accent)', flex: '0 0 auto', marginTop: 3 }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
           {!isMobile && (
             <IconButton
