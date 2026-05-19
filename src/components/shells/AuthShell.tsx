@@ -249,6 +249,22 @@ export function AuthShell({ alert, children }: AuthShellProps) {
         >
           {t('authHero.byline')}
         </footer>
+
+        {/* Shema attribution — keep identical with project-health-ui/src/pages/Login.tsx */}
+        <p
+          style={{
+            marginTop: 12,
+            textAlign: 'center',
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: '0.04em',
+            color: 'currentColor',
+            opacity: 0.55,
+            fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          }}
+        >
+          by Shema Bible Translation · YWAM Kansas City
+        </p>
       </div>
     </div>
   );
