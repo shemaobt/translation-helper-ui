@@ -20,7 +20,7 @@ export default function Chat() {
     chatTitle,
     isNew,
     agent,
-    rotateAgent,
+    setAgent,
     messages,
     draft,
     setDraft,
@@ -82,7 +82,7 @@ export default function Chat() {
               onMicClick={toggleMic}
               state={inputState}
               agent={agent}
-              onAgentClick={rotateAgent}
+              onAgentSelect={setAgent}
               showHint={!isMobile}
               disabled={isStreaming}
             />

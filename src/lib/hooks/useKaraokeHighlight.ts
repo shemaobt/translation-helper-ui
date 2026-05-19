@@ -57,6 +57,30 @@ function buildRange(spans: NodeSpan[], start: number, end: number): Range | null
   }
 }
 
+const WORD_RE = /[\p{L}\p{N}]+(?:['’\-_][\p{L}\p{N}]+)*/gu;
+
+interface WordHit {
+  start: number;
+  end: number;
+}
+
+function findWordFrom(fullText: string, word: string, from: number): WordHit | null {
+  const target = word.toLowerCase();
+  WORD_RE.lastIndex = from;
+  let m: RegExpExecArray | null;
+  while ((m = WORD_RE.exec(fullText)) !== null) {
+    if (m[0].toLowerCase() === target) {
+      return { start: m.index, end: m.index + m[0].length };
+    }
+  }
+  return null;
+}
+
+// Match each sentence to a DOM range by walking its word tokens in order,
+// tolerating arbitrary non-word characters between them (markdown punctuation,
+// whitespace, list bullets, link brackets, etc.). The spoken text fed to TTS
+// is markdown-stripped, but the DOM still contains the original markdown —
+// substring matching breaks as soon as any formatting is present.
 function buildSentenceRanges(container: HTMLElement, sentences: string[]): (Range | null)[] {
   const spans = collectTextSpans(container);
   if (spans.length === 0) return sentences.map(() => null);
@@ -64,14 +88,31 @@ function buildSentenceRanges(container: HTMLElement, sentences: string[]): (Rang
   const ranges: (Range | null)[] = [];
   let cursor = 0;
   for (const sentence of sentences) {
-    const idx = fullText.indexOf(sentence, cursor);
-    if (idx < 0) {
+    const words = sentence.match(WORD_RE);
+    if (!words || words.length === 0) {
       ranges.push(null);
       continue;
     }
-    const end = idx + sentence.length;
-    cursor = end;
-    ranges.push(buildRange(spans, idx, end));
+    let scan = cursor;
+    let firstStart = -1;
+    let lastEnd = -1;
+    let matched = true;
+    for (const w of words) {
+      const hit = findWordFrom(fullText, w, scan);
+      if (!hit) {
+        matched = false;
+        break;
+      }
+      if (firstStart < 0) firstStart = hit.start;
+      lastEnd = hit.end;
+      scan = hit.end;
+    }
+    if (!matched || firstStart < 0 || lastEnd < 0) {
+      ranges.push(null);
+      continue;
+    }
+    cursor = lastEnd;
+    ranges.push(buildRange(spans, firstStart, lastEnd));
   }
   return ranges;
 }

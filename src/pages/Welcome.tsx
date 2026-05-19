@@ -16,11 +16,6 @@ export default function Welcome() {
 
   const startThread = () => navigate(`/chat/new-${Date.now()}`);
 
-  const rotateAgent = () => {
-    const i = AGENTS.findIndex((a) => a.id === agentId);
-    setAgentId(AGENTS[(i + 1) % AGENTS.length].id);
-  };
-
   return (
     <AppShell presentational>
       {isMobile ? <MobileHeader showBrand /> : <TopBar />}
@@ -46,7 +41,7 @@ export default function Welcome() {
               onSend={startThread}
               state="idle"
               agent={AGENT_BY_ID[agentId]}
-              onAgentClick={rotateAgent}
+              onAgentSelect={setAgentId}
               showHint={!isMobile}
             />
           </div>
