@@ -14,7 +14,8 @@ export default function Welcome() {
   const [agentId, setAgentId] = useState<AgentId>('storyteller');
   const isMobile = useIsMobile();
 
-  const startThread = () => navigate(`/chat/new-${Date.now()}`);
+  const startThread = (id: AgentId = agentId) =>
+    navigate(`/chat/new-${Date.now()}?agent=${id}`);
 
   return (
     <AppShell presentational>
@@ -38,7 +39,7 @@ export default function Welcome() {
             <MainInput
               value={draft}
               onChange={setDraft}
-              onSend={startThread}
+              onSend={() => startThread()}
               state="idle"
               agent={AGENT_BY_ID[agentId]}
               onAgentSelect={setAgentId}
@@ -49,7 +50,7 @@ export default function Welcome() {
             isMobile={isMobile}
             onSelect={(id) => {
               setAgentId(id);
-              startThread();
+              startThread(id);
             }}
           />
         </div>
