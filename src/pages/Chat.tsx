@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useRoute } from 'wouter';
+import { useRoute, useSearch } from 'wouter';
+import { AGENT_BY_ID, type AgentId } from '../lib/agents';
 import {
   AssistantMessage,
   ChatEmptyState,
@@ -15,6 +16,10 @@ import { useIsMobile } from '../lib/hooks/useIsMobile';
 export default function Chat() {
   const { t } = useTranslation();
   const [, params] = useRoute<{ chatId?: string }>('/chat/:chatId?');
+  const search = useSearch();
+  const requestedAgent = new URLSearchParams(search).get('agent') as AgentId | null;
+  const initialAgentId =
+    requestedAgent && AGENT_BY_ID[requestedAgent] ? requestedAgent : undefined;
   const isMobile = useIsMobile();
   const {
     chatTitle,
@@ -29,7 +34,7 @@ export default function Chat() {
     toggleMic,
     error,
     isStreaming,
-  } = useChat(params?.chatId);
+  } = useChat(params?.chatId, { initialAgentId });
 
   return (
     <AppShell>
